@@ -194,7 +194,11 @@ in `docs/notes/OC200_AR8236_IPERF_INVESTIGATION.md`.
 A direct SSH session to `root@192.168.12.26` was established while the board was running the RAM/TFTP system. Read-only `dd` streams were collected into:
 
 ```text
-<archive>/research/backups/oc200-emmc-2026-11-01/
+user.img.zst
+boot0.img.zst
+boot1.img.zst
+oc200-spi-nor-1MiB.bin.zst
+oc200-emmc-dtb-region-lba-0x380-128sectors.bin.zst
 ```
 
 The directory contains the user-area dump plus the two eMMC boot-area reads, SHA-256 metadata, and a README. The actual device-side `dd` streams reached EOF earlier than the stale sysfs logical sizes: the user area is 3,907,452,928 bytes, while sysfs reported 3,909,091,328 bytes; each boot-area stream is also shorter than its 4 MiB sysfs size. The files preserve the actual returned bytes and are not padded. RPMB was intentionally not accessed. No board-side write command was used.

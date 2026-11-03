@@ -55,7 +55,11 @@ Content inspection:
 Dump directory:
 
 ```text
-<archive>/research/backups/oc200-emmc-2026-11-01/
+user.img.zst
+boot0.img.zst
+boot1.img.zst
+oc200-spi-nor-1MiB.bin.zst
+oc200-emmc-dtb-region-lba-0x380-128sectors.bin.zst
 ```
 
 The raw files are EOF-sized reads. `checksum-comparison.json` proves that
@@ -211,7 +215,7 @@ Final layout (LBA, 512-byte sectors, device = 7,631,744 sectors):
           p2 end == 7631743, the exact device end
 ```
 
-Artifacts (<archive>/research/emmc-image/):
+Artifacts (Beta 1 intermediates, not retained):
 
 ```text
 oc200-erofs-persist.img     3907452928 bytes
@@ -245,7 +249,7 @@ SPI-NOR was present as `/dev/mtd0ro`, size 1 MiB. Two independent read-only
 SSH dumps compared byte-for-byte equal and are retained at:
 
 ```text
-<archive>/research/backups/oc200-emmc-2026-11-01/oc200-spi-nor-1MiB.bin
+oc200-spi-nor-1MiB.bin
 SHA-256 56715aafa699c576d11dc36410dfa7854256d5d65293695117c5e6d0b75d5151
 ```
 
@@ -308,7 +312,7 @@ SHA-256 7b025fe2118929aaa220b399257b469a0512b0071432abe990bdd5f94b8e9520
 New DTB is separately staged at
 `/var/lib/tftpboot/oc200_test/oc200-6.18.59-usbfix.dtb`.
 Before flashing, the full 64 KiB raw DTB window at LBA `0x380` was saved as
-`<archive>/research/backups/oc200-emmc-2026-11-01/oc200-emmc-dtb-region-lba-0x380-128sectors.bin`;
+`oc200-emmc-dtb-region-lba-0x380-128sectors.bin`;
 its prefix matched the old TFTP DTB. The new DTB was then padded to 64 KiB,
 written only to that raw window, and read back with matching SHA-256
 `849159cfaeb504f889d4e358879f28001121b6b41f7b9eacc16718c49f6ce20a`.
@@ -359,7 +363,7 @@ Root's shadow entry was then found to require a password change, so the updated
 EROFS was written to `/dev/mmcblk0p1` only from RAM recovery. The current p1
 readback matches the new payload hash in
 `build/emmc-image/last-p1-shadowfix-readback.txt`; the pre-update p1 backup
-is `[đã xóa] <archive>/research/emmc-image/p1-before-shadowfix.backup`. The first eMMC boot then
+is `not-retained/research/emmc-image/p1-before-shadowfix.backup`. The first eMMC boot then
 panicked because the kernel build had an empty `CONFIG_INITRAMFS_SOURCE` and
 `CONFIG_EROFS_FS=m`, despite the runbook expecting an embedded initramfs. The
 config is corrected to embed `/build/erofs-initramfs.cpio` and build EROFS in.
@@ -368,7 +372,7 @@ is 41,318,912 bytes (80,701 sectors), ending at LBA 81,725, safely before p1
 at LBA 131,072. Only that kernel extent at LBA `0x400` was written; readback
 SHA-256 `045849beb994ded1911b5d356395d2f4e924eab91609b9f1a2bebf9a415cdef7`
 matches, and a p1 readback still matches its expected SHA-256. The original
-kernel window backup is `[đã xóa] <archive>/research/emmc-image/kernel-window-before-embedded-initramfs.backup`.
+kernel window backup is `not-retained/research/emmc-image/kernel-window-before-embedded-initramfs.backup`.
 SPI NOR, eMMC boot0/boot1, RPMB, DTB and p2 remain untouched. The board is back
 in RAM recovery; persistent boot and service/USB/LED behavior await another
 manual eMMC boot.
@@ -399,7 +403,7 @@ Changes prepared locally:
 - A p2 F2FS image matching the existing partition boundary/capacity passed
   `fsck.f2fs` before flashing; the full image write installed it at p2.
 
-The final candidate is `[đã xóa] <archive>/research/emmc-image/oc200-erofs-persist.img`, SHA-256
+The final candidate is `not-retained/research/emmc-image/oc200-erofs-persist.img`, SHA-256
 `a958986e2e8d8cb50fe0a20d5e43c14a3bada2d987f2edb72943e08e23b8f5db`. It
 contains the 42,179,072-byte kernel, updated DSA DTB labels (`swp1`/`swp2`),
 EROFS p1, and F2FS p2. From RAM recovery, preflight confirmed the expected CID,

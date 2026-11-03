@@ -1,0 +1,35 @@
+{
+  "created_utc": "2026-10-31T20:26:37Z",
+  "results": [
+    {
+      "name": "user",
+      "remote_sha256": "f79ef0374c5bd59da64dbfaeb895fd23b940554c9ef5ae3b9e7cb30e146dbe75",
+      "dump_sha256": "5f98143c8f95874499a22a2b474a6229b8b5ec33de0d93d1bdc54ef13a3d39ad",
+      "dump_bytes": 3907452928,
+      "logical_bytes": 3909091328,
+      "zero_padded_tail_bytes": 1638400,
+      "zero_padded_sha256": "f79ef0374c5bd59da64dbfaeb895fd23b940554c9ef5ae3b9e7cb30e146dbe75",
+      "zero_padded_match": true
+    },
+    {
+      "name": "boot0",
+      "remote_sha256": "5ebaab9505b480f38906070b8d1bcdc92492ccac020871955a59963853325e9d",
+      "dump_sha256": "2dce229d0099e7e3cc65ee98b92893c8618bb92ccec498c09ade0da8ff28a9df",
+      "dump_bytes": 2359296,
+      "logical_bytes": 4194304,
+      "zero_padded_tail_bytes": 1835008,
+      "zero_padded_sha256": "5ebaab9505b480f38906070b8d1bcdc92492ccac020871955a59963853325e9d",
+      "zero_padded_match": true
+    },
+    {
+      "name": "boot1",
+      "remote_sha256": "bb9f8df61474d25e71fa00722318cd387396ca1736605e1248821cc0de3d3af8",
+      "dump_sha256": "f9f69f2afaff3dbcd98b095f62d13b5cfcd9eb032d5c4dee39cab25912abc9ac",
+      "dump_bytes": 2293760,
+      "logical_bytes": 4194304,
+      "zero_padded_tail_bytes": 1900544,
+      "zero_padded_sha256": "bb9f8df61474d25e71fa00722318cd387396ca1736605e1248821cc0de3d3af8",
+      "zero_padded_match": true
+    }
+  ]
+}

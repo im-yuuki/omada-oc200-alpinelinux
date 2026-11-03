@@ -4,16 +4,16 @@
 
 The initial capture attempts recorded below failed and left zero-byte
 placeholders. A later read-only collection is preserved under
-`<archive>/research/backups/oc200-emmc-2026-11-01/`: it contains two matching full-size
+release assets (metadata in `docs/notes/backup-2026-11-01/`): it contains two matching full-size
 1 MiB SPI-NOR reads and EOF-sized eMMC user/boot-area reads. The eMMC files are
 the actual bytes returned by `dd`, shorter than Linux sysfs logical sizes; they
 are not padded whole-device images. See that directory's README and metadata
 before using them. RPMB was not accessed. Current build, recovery, and flash
 boundaries are in `BETA_BUILD.md`.
 
-- `[không có trong workspace] <archive>/research/backups/oc200-nor-1MiB.bin`: 0 bytes
-- `[không có trong workspace] <archive>/research/backups/oc200-nor-udp.bin`: 0 bytes
-- `[không có trong workspace] <archive>/research/backups/nc-test.bin`: 0 bytes
+- `not-present/research/backups/oc200-nor-1MiB.bin`: 0 bytes
+- `not-present/research/backups/oc200-nor-udp.bin`: 0 bytes
+- `not-present/research/backups/nc-test.bin`: 0 bytes
 
 The earlier transfer attempts used TCP/UDP through the NAT path and were not reliable. The board did calculate a NOR device hash during one diagnostic session:
 

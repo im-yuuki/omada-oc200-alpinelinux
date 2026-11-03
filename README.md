@@ -16,16 +16,17 @@ OC200 (Armada 3720) board.
 
 ## Not in this repository
 
-Large binaries (eMMC images, partitions, kernel/rootfs images, device dumps,
-upstream Linux and OpenWrt source trees, and build directories) are kept
-outside git. Their hashes are listed in `release/beta2/SHA256SUMS.txt` and
-`release/beta2/build-manifest.json`. The compressed payloads are published as
-release assets (`.zst`, decompress with `zstd -d`).
+Large binaries are kept outside git and published as release assets: eMMC
+images and partitions, kernel and recovery images, device backups, and the
+upstream Linux and vendor GPL source tarballs. Compressed payloads are `.zst`;
+decompress with `zstd -d`. Their hashes are in `release/beta2/SHA256SUMS.txt`
+(payloads) and `release/beta2/RELEASE-ASSETS-SHA256SUMS.txt` (uploaded assets).
 
-Paths written as `<archive>/...` in the docs refer to the local
-`oc200-alpine-archive/` folder beside this repository. It holds the original
-working tree (`research/`, `out/`, `oc200-rfc2217/`). Some of its build
-outputs have been removed, so those paths may no longer exist.
+The kernel source tree is not stored. Rebuild it from `linux-6.18.59.tar.xz`
+and apply `release/beta2/kernel-repro/patches`.
+
+Paths marked `not-retained/` were Beta 1 intermediate inputs and are not kept.
+Paths marked `not-present/` never existed in the working tree.
 
 ## Start here
 
