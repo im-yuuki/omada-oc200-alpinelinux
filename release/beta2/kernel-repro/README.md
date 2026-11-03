@@ -43,7 +43,7 @@ Install an ARM64 cross compiler, `make`, `bc`, `bison`, `flex`, `dtc`, `cpio`,
 OpenSSL development tools, and the usual kernel build dependencies. Then:
 
 ```sh
-cd /path/to/oc200-alpine/out/kernel-repro
+cd /path/to/oc200-alpine/release/beta2/kernel-repro
 ./build.sh /path/to/linux-6.18.59 /tmp/oc200-build
 ```
 

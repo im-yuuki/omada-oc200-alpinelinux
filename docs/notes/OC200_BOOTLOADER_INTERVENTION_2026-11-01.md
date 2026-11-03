@@ -21,7 +21,7 @@ Only two 4 KiB erase sectors were intended to change:
 
 The environment starts at `0xa3660`. The patched environment keeps the
 original `bootcmd` recovery fallback and uses the eMMC read windows documented
-in `out/GUIDE-NORMAL-BOOT.md`. The candidate replaces unneeded defaults with an
+in `docs/guides/GUIDE-NORMAL-BOOT.md`. The candidate replaces unneeded defaults with an
 inert `zz_patch_pad` record so the environment span and double-NUL terminator
 remain in place. The TIM IMBO hash and the dependent first TIM-image hash were
 updated in the candidate.
@@ -46,8 +46,8 @@ loadkernel=mmc dev 0; mmc read $kernel_addr 0x400 0x1fc00
 The default pad record is `zz_patch_pad=...`; its zero-filled value is inert
 and ends before the preserved double-NUL terminator. Other removed defaults
 and the full byte-level diff are listed in
-`out/OC200_NORMAL_ENV_PATCH_REPORT.md` and
-`out/OC200_NORMAL_BOOT_SPI_NOR_DIFF_MANIFEST.md`.
+`<archive>/out/OC200_NORMAL_ENV_PATCH_REPORT.md` and
+`<archive>/out/OC200_NORMAL_BOOT_SPI_NOR_DIFF_MANIFEST.md`.
 
 ## Pre-write checks
 
@@ -112,11 +112,11 @@ Linux runtime acceptance test has passed.
 The targeted sector images and full candidate remain at:
 
 ```text
-out/oc200-spi-nor-normal-boot-diff-sectors/sector-000000.bin
-out/oc200-spi-nor-normal-boot-diff-sectors/sector-0a3000.bin
-out/oc200-spi-nor-normal-boot-env-patched.bin
-out/OC200_NORMAL_BOOT_SPI_NOR_DIFF_MANIFEST.json
-out/OC200_NORMAL_BOOT_SPI_NOR_DIFF_MANIFEST.md
+<archive>/out/oc200-spi-nor-normal-boot-diff-sectors/sector-000000.bin
+<archive>/out/oc200-spi-nor-normal-boot-diff-sectors/sector-0a3000.bin
+<archive>/out/oc200-spi-nor-normal-boot-env-patched.bin
+<archive>/out/OC200_NORMAL_BOOT_SPI_NOR_DIFF_MANIFEST.json
+<archive>/out/OC200_NORMAL_BOOT_SPI_NOR_DIFF_MANIFEST.md
 ```
 
 Candidate full-image SHA-256:
@@ -129,7 +129,7 @@ The original NOR dump remains the rollback/reference artifact and must not be
 overwritten:
 
 ```text
-research/backups/oc200-emmc-2026-11-01/oc200-spi-nor-1MiB.bin
+<archive>/research/backups/oc200-emmc-2026-11-01/oc200-spi-nor-1MiB.bin
 56715aafa699c576d11dc36410dfa7854256d5d65293695117c5e6d0b75d5151
 ```
 

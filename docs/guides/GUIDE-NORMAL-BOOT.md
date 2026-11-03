@@ -10,7 +10,7 @@ has been installed to the board's eMMC user area. If it has not, use
 > environment was patched separately to autoboot this eMMC layout, retaining
 > the vendor `httpd` fallback after a failed `booti`. Full-NOR readback matched
 > the candidate before reboot; the user reported the reboot succeeded. See
-> `research/OC200_BOOTLOADER_INTERVENTION_2026-11-01.md`. The manual sequence
+> `docs/notes/OC200_BOOTLOADER_INTERVENTION_2026-11-01.md`. The manual sequence
 > below remains a recovery/diagnostic option; do not treat the earlier
 > “never touch SPI NOR” advice as a description of the board's current state.
 
