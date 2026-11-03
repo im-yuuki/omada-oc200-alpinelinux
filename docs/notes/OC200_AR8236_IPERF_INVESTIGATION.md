@@ -1,8 +1,11 @@
 # OC200 AR8236 / iperf3 investigation
 
 Status: runtime A/B tests completed; an explicit flow-bit programming change is
-in the current kernel worktree. Results do not confirm pause mismatch as the
-cause; validate the driver change with the same forward/reverse test after boot.
+in the kernel (`release/beta2/kernel-repro/drivers/net/dsa/qca/ar8236.c`). After
+that change, forward throughput rose from about 55 Mbps to 91 Mbps (2026-11-03).
+Reverse was 95.2 Mbps with 0 retries on the same kernel. Forward TCP retries
+stayed high.
+Earlier A/B tests did not confirm pause mismatch as the sole cause.
 
 ## Symptom
 
@@ -204,6 +207,38 @@ the pause/offload hypotheses. The current code change only clears stale
 AR8236 directional/half-flow bits and sets `TXFLOW`/`RXFLOW` explicitly from
 phylink's `tx_pause`/`rx_pause`; it does not force a pause policy on the fixed
 CPU link. MIB exposure and tagger changes remain deferred.
+
+### Runtime results — 2026-11-03 (after flow-bit change)
+
+Board `192.168.12.6` to `192.168.12.3:5201`, 10 seconds, board-to-host
+(forward), with the flow-bit driver change running:
+
+| Test | Forward throughput / retries | Notes |
+| --- | --- | --- |
+| Before flow-bit change (2026-11-01, `192.168.12.5`) | 55.3 Mbps / 1,106 | baseline from the table above |
+| After flow-bit change (2026-11-03, `192.168.12.3`) | 91.1 Mbps / 2,540 | sender 91.1 Mbps, receiver 91.0 Mbps; cwnd 8–36 KB |
+| Reverse, same kernel (2026-11-03, `192.168.12.3 -R`) | 95.2 Mbps / 0 | sender 95.2 Mbps, receiver 93.9 Mbps; 10 s, one run |
+
+Interpretation:
+
+- Both directions now reach about 91–95 Mbps, close to the 100 Mbps switch
+  ceiling. The throughput asymmetry is largely resolved.
+- Reverse retries are 0, the same as before the change. Forward retries
+  are still high: about 254/s, up from about 110/s before the change. The TX
+  path from the board still drops or stalls frames, even though the throughput
+  is higher.
+- Forward and reverse were run on the same kernel and server in one session,
+  so this pair is a like-for-like comparison. The earlier 2026-11-01 baseline
+  used a different board IP (`.28`) and server (`.5`), so the before/after
+  comparison is still approximate.
+
+Next steps:
+
+1. Record the kernel image hash on the board, so the result is tied to the
+   driver version.
+2. Investigate the remaining forward retries: CPU-port pause policy, AR8236
+   MIB counters, and the tagger and mvneta items below.
+3. Repeat the forward test a few times to see whether the retry count is stable.
 
 ### Offload test
 
