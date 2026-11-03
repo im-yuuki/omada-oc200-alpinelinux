@@ -41,6 +41,31 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/*
+ * OC200 (TP-Link OC200) board description, derived from the Marvell
+ * Armada 3720 community/ECK reference DTS (2016 Marvell license above).
+ *
+ * This file is a MODIFIED derivative, not an unmodified upstream file.
+ * The base reference DTS is not present in the linux-6.18.59 tarball, so
+ * this list is written by hand, not generated with diff. Every change that
+ * is specific to the OC200 is tagged "OC200 MOD" in the body.
+ *
+ * Summary of modifications:
+ *   1. Model and compatible: TP-Link OC200 identity added first.
+ *   2. Memory: 1 GiB (0x40000000 bytes).
+ *   3. System LED and reset-button pin groups moved from a separate
+ *      south-bridge-pinctrl node into &pinctrl_sb (deferred-probe fix).
+ *   4. gpio-leds and gpio-keys: OC200 GPIO assignments; LED uses the
+ *      disk-activity trigger.
+ *   5. eth0: CPU link fixed at 100 Mbps full duplex, pause not advertised.
+ *   6. mdio: AR8236 switch node (CPU port 0 to eth0, user ports swp1/swp2).
+ *   7. USB2/USB3, UART0, I2C0/I2C1, SPI0 flash, eMMC (sdhci0): enabled
+ *      with OC200-specific settings.
+ *
+ * Items marked "not verified against base" are believed to be OC200 changes
+ * but have not been compared against the base reference file.
+ */
+
 /dts-v1/;
 
 #include <dt-bindings/gpio/gpio.h>
@@ -48,6 +73,8 @@
 #include "armada-372x.dtsi"
 
 / {
+	/* OC200 MOD: model and first compatible changed to the OC200 identity;
+	 * the ECK board strings are kept as fallbacks. */
 	model = "Marvell Armada 3720 ECK Board";
 	compatible = "tplink,oc200", "marvell,armada-3720-oc200", "marvell,armada-3720-eck", "marvell,armada3720", "marvell,armada3710";
 
@@ -60,6 +87,7 @@
 		stdout-path = "serial0:115200n8";
 	};
 
+	/* OC200 MOD: 1 GiB DRAM (U-Boot reports DRAM: 1 GiB). */
 	memory {
 		device_type = "memory";
 		reg = <0x00000000 0x00000000 0x00000000 0x40000000>;
@@ -144,6 +172,8 @@
 
 
 
+	/* OC200 MOD: system LED on GPIO SB 1 (mpp1); the disk-activity trigger is
+	 * an OC200 choice, not in the base file. */
 	gpio-leds {
 		compatible = "gpio-leds";
 		pinctrl-0 = <&system_led_pins>;
@@ -157,6 +187,8 @@
 		};
 	};
 
+	/* OC200 MOD: reset button on GPIO SB 4 (mpp4), active low, mapped to
+	 * KEY_RESTART. */
 	gpio-keys {
 		compatible = "gpio-keys";
 		pinctrl-0 = <&system_reset_pins>;
@@ -207,6 +239,9 @@
 	status = "okay";
 };
 
+/* OC200 MOD: eth0 is the CPU port to the AR8236 switch. The fixed link is
+ * 100 Mbps full duplex, and pause is not advertised ("//pause;" below is
+ * commented out). See docs/notes/OC200_AR8236_IPERF_INVESTIGATION.md. */
 &eth0 {
 	phy-mode = "rgmii";
 	status = "okay";
@@ -222,6 +257,9 @@
 
 };
 
+/* OC200 MOD: AR8236 10/100 switch on the MDIO bus. Port 0 is the CPU port
+ * (eth0). swp1 and swp2 are the user ports. This node does not exist in the
+ * base reference file. The driver is in drivers/net/dsa/qca/ar8236.c. */
 &mdio {
 	switch0: switch@0 {
 		compatible = "qca,ar8236";

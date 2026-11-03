@@ -41,6 +41,31 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/*
+ * OC200 (TP-Link OC200) board description, derived from the Marvell
+ * Armada 3720 community/ECK reference DTS (2016 Marvell license above).
+ *
+ * This file is a MODIFIED derivative, not an unmodified upstream file.
+ * The base reference DTS is not present in the linux-6.18.59 tarball, so
+ * this list is written by hand, not generated with diff. Every change that
+ * is specific to the OC200 is tagged "OC200 MOD" in the body.
+ *
+ * Summary of modifications:
+ *   1. Model and compatible: TP-Link OC200 identity added first.
+ *   2. Memory: 1 GiB (0x40000000 bytes).
+ *   3. System LED and reset-button pin groups moved from a separate
+ *      south-bridge-pinctrl node into &pinctrl_sb (deferred-probe fix).
+ *   4. gpio-leds and gpio-keys: OC200 GPIO assignments; LED uses the
+ *      disk-activity trigger.
+ *   5. eth0: CPU link fixed at 100 Mbps full duplex, pause not advertised.
+ *   6. mdio: AR8236 switch node (CPU port 0 to eth0, user ports swp1/swp2).
+ *   7. USB2/USB3, UART0, I2C0/I2C1, SPI0 flash, eMMC (sdhci0): enabled
+ *      with OC200-specific settings.
+ *
+ * Items marked "not verified against base" are believed to be OC200 changes
+ * but have not been compared against the base reference file.
+ */
+
 /dts-v1/;
 
 #include <dt-bindings/gpio/gpio.h>
@@ -48,6 +73,8 @@
 #include "armada-372x.dtsi"
 
 / {
+	/* OC200 MOD: model and first compatible changed to the OC200 identity;
+	 * the ECK board strings are kept as fallbacks. */
 	model = "Marvell Armada 3720 ECK Board";
 	compatible = "tplink,oc200", "marvell,armada-3720-oc200", "marvell,armada-3720-eck", "marvell,armada3720", "marvell,armada3710";
 
@@ -60,9 +87,10 @@
 		stdout-path = "serial0:115200n8";
 	};
 
+	/* OC200 MOD: 1 GiB DRAM (U-Boot reports DRAM: 1 GiB). */
 	memory {
 		device_type = "memory";
-		reg = <0x00000000 0x00000000 0x00000000 0x20000000>;
+		reg = <0x00000000 0x00000000 0x00000000 0x40000000>;
 	};
 
 	soc {
@@ -71,17 +99,10 @@
 				status = "okay";
 			};
 
-			spinctrl: south-bridge-pinctrl@18830 {
-				system_led_pins: system-led-pins {
-					marvell,pins = "mpp1";
-					marvell,function = "gpio";
-				};
-
-				system_reset_pins: system-reset-pins {
-					marvell,pins = "mpp4";
-					marvell,function = "gpio";
-				};
-			};
+			/* Pin groups moved to &pinctrl_sb below (fixes
+			 * leds-gpio / gpio-keys deferred probe: the pinctrl
+			 * subsystem requires pin-group nodes to be children
+			 * of the actual pinctrl device node). */
 
 			u3d@50000 {
 				status = "disabled";
@@ -149,44 +170,10 @@
 		};
 	};
 
-/* Upstream has no DSA support for ar8236 */
-/*
-	dsa@0 {
-		compatible = "marvell,dsa";
-		dsa,ethernet = <&eth0>;
-		dsa,mii-bus = <&mdio>;
-		#address-cells = <2>;
-		#size-cells = <0>;
 
-		switch@0 {
-				#address-cells = <1>;
-				#size-cells = <0>;
-				reg = <0 0>;
 
-				port@0 {
-						reg = <0>;
-						label = "cpu";
-						fixed-link {
-							speed = <100>;
-							full-duplex;
-						};
-				};
-
-				port@1 {
-						reg = <1>;
-						label = "lan0";
-						phy-handle = <&phy1>;
-				};
-
-				port@2 {
-						reg = <2>;
-						label = "lan1";
-						phy-handle = <&phy2>;
-				};
-		};
-	};
-*/
-
+	/* OC200 MOD: system LED on GPIO SB 1 (mpp1); the disk-activity trigger is
+	 * an OC200 choice, not in the base file. */
 	gpio-leds {
 		compatible = "gpio-leds";
 		pinctrl-0 = <&system_led_pins>;
@@ -196,9 +183,12 @@
 			label = "system-led";
 			gpios = <&gpiosb 1 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
+			linux,default-trigger = "disk-activity";
 		};
 	};
 
+	/* OC200 MOD: reset button on GPIO SB 4 (mpp4), active low, mapped to
+	 * KEY_RESTART. */
 	gpio-keys {
 		compatible = "gpio-keys";
 		pinctrl-0 = <&system_reset_pins>;
@@ -232,6 +222,15 @@
 	status = "okay";
 };
 
+/* Enable the actual Armada 37xx host-controller nodes inherited from dtsi. */
+&usb3 {
+	status = "okay";
+};
+
+&usb2 {
+	status = "okay";
+};
+
 &i2c0 {
 	status = "okay";
 };
@@ -240,6 +239,9 @@
 	status = "okay";
 };
 
+/* OC200 MOD: eth0 is the CPU port to the AR8236 switch. The fixed link is
+ * 100 Mbps full duplex, and pause is not advertised ("//pause;" below is
+ * commented out). See docs/notes/OC200_AR8236_IPERF_INVESTIGATION.md. */
 &eth0 {
 	phy-mode = "rgmii";
 	status = "okay";
@@ -255,12 +257,42 @@
 
 };
 
+/* OC200 MOD: AR8236 10/100 switch on the MDIO bus. Port 0 is the CPU port
+ * (eth0). swp1 and swp2 are the user ports. This node does not exist in the
+ * base reference file. The driver is in drivers/net/dsa/qca/ar8236.c. */
 &mdio {
 	switch0: switch@0 {
 		compatible = "qca,ar8236";
+		dsa,member = <0 0>;
 		#address-cells = <1>;
 		#size-cells = <0>;
-		reg = <0 0>;
+		reg = <0>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				ethernet = <&eth0>;
+				phy-mode = "rgmii";
+
+				fixed-link {
+					speed = <100>;
+					full-duplex;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				label = "swp1";
+			};
+
+			port@2 {
+				reg = <2>;
+				label = "swp2";
+			};
+		};
 	};
 };
 
@@ -282,5 +314,22 @@
 	mmc0: mmccard@0 {
 		compatible = "mmc-card";
 		reg = <0>;
+	};
+};
+
+/* SB pin groups for the system LED and reset button.
+ * These MUST be children of the pinctrl_sb device node so that
+ * pinctrl_bind_pins() can resolve them; the old placement under a
+ * separate south-bridge-pinctrl@18830 node caused leds-gpio and
+ * gpio-keys to defer forever. */
+&pinctrl_sb {
+	system_led_pins: system-led-pins {
+		marvell,pins = "mpp1";
+		marvell,function = "gpio";
+	};
+
+	system_reset_pins: system-reset-pins {
+		marvell,pins = "mpp4";
+		marvell,function = "gpio";
 	};
 };
