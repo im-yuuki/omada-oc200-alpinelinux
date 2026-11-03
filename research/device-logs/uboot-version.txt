@@ -1,0 +1,6 @@
+version
+
+U-Boot 2017.03-armada-17.10.1 (Jan 25 2024 - 14:42:29 +0800)
+aarch64-openwrt-linux-gnu-gcc (OpenWrt GCC 5.3.0 12009) 5.3.0
+GNU ld (GNU Binutils) 2.25.1
+Marvell>> 

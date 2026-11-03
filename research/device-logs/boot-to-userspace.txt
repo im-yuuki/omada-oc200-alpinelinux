@@ -1,0 +1,422 @@
+WTMI-armada-17.10.3-e96bb83aa
+WTMI: system early-init
+
+DDR topology parameters:
+========================
+ddr type               DDR3
+ddr speedbin           12
+bus width              16-bits
+cs num                 2
+  cs[0] - group num    0
+  cs[0] - bank num     8
+  cs[0] - capacity     512MiB
+  cs[1] - group num    0
+  cs[1] - bank num     8
+  cs[1] - capacity     512MiB
+
+DRAM windows:
+=============
+WIN[0] - base addr     0x60000000
+WIN[0] - size          0x40000000
+WIN[1] - base addr     0xa0000000
+WIN[1] - size          0x20000000
+
+memory test region:
+===================
+CS[0]                  0x60000000 - 0x7fffffff
+CS[1]                  0x80000000 - 0x9fffffff
+
+Fill memory before self refresh...done
+
+Fill memory before self refresh...done
+
+Now in Self-refresh Mode
+Restore termination values to original values
+Exited self-refresh ...
+
+
+Self refresh Pass.
+DDR self test mode test done!!
+
+Self refresh Pass.
+DDR self test mode test done!!
+
+QS GATING
+=============
+Calibration done: cycle = 0x00 tap =0x61
+CH0_PHY_RL_Control_CS0_B0[0xC0001180]: 0x00000061
+CH0_PHY_RL_Control_CS0_B1[0xC0001184]: 0x00000061
+
+
+QS GATING
+=============
+Calibration done: cycle = 0x00 tap =0x61
+CH0_PHY_RL_Control_CS1_B0[0xC00011A4]: 0x00000061
+CH0_PHY_RL_Control_CS1_B1[0xC00011A8]: 0x00000061
+
+DLL TUNING
+==============
+   DLL 0xc0001050[21:16]: [0,2b,15]
+   DLL 0xc0001050[29:24]: [5,33,1c]
+   DLL 0xc0001054[21:16]: [0,2e,17]
+   DLL 0xc0001054[29:24]: [7,37,1f]
+   DLL 0xc0001074[21:16]: [0,3f,1f]
+   DLL 0xc0001074NOTICE:  Booting Trusted Firmware
+NOTICE:  BL1: v1.3(debug):armada-17.10.7:e96bb83aa
+NOTICE:  BL1: Built : 08:20:31, Jan  5 2NOTICE:  BL2: v1.3(debug):armada-17.10.7:e96bb83aa
+NOTICE:  BL2: Built : 08:20:32, Jan  5 20NOTICE:  BL31: v1.3(debug):armada-17.10.7:e96bb83aa
+NOTICE:  BL31:
+
+U-Boot 2017.03-armada-17.10.1 (Jan 25 2024 - 14:42:29 +0800)
+
+Model: Marvell Armada 3720 ECK Board
+       CPU    @ 1000 [MHz]
+       L2     @ 800 [MHz]
+       TClock @ 200 [MHz]
+       DDR    @ 800 [MHz]
+DRAM:  1 GiB
+U-Boot DT blob at : 000000003f71a3c8
+Comphy-0: USB3          5 Gbps    
+Comphy-1: PEX0          2.5 Gbps  
+Comphy-2: SATA0         6 Gbps    
+MMC:   sdhci@d8000: 0
+SF: Detected gd25lq80 with page size 256 Bytes, erase size 4 KiB, total 1 MiB
+*** Warning - bad CRC, using default environment
+
+Net:   SF: Detected gd25lq80 with page size 256 Bytes, erase size 4 KiB, total 1 MiB
+Factory mac is : 1C-3B-F3-77-31-6F
+eth0: neta@30000 [PRIME]
+Attach switch ID 0x004dd043
+Attach switch driver for AR8236
+Checking for firmware recovery mode...
+Reset button not pushed, do nothing
+Press CTRL+B to abort autoboot in 1 seconds
+switch to partitions #0, OK
+mmc0(part 0) is current device
+
+MMC read: dev # 0, block # 896, count 128 ... 128 blocks read: OK
+switch to partitions #0, OK
+mmc0(part 0) is current device
+
+MMC read: dev # 0, block # 1024, count 32768 ... 32768 blocks read: OK
+## Flattened Device Tree blob at 04f00000
+   Booting using the fdt blob at 0x4f00000
+   Using Device Tree in place at 0000000004f00000, end 0000000004f06007
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Initializing cgroup subsys cpu
+[    0.000000] Linux version 4.4.52 Build:jenkins-oc_projects-PROJECT_OC200_FW_SDN_v5_GraalVM_test-661 (campus@campusbuild-ep) (gcc version 5.3.0 (OpenWrt GCC 5.3.0 12009) ) #1 SMP PREEMPT Wed May 6 12:29:45 UTC 2026
+[    0.000000] Boot CPU: AArch64 Processor [410fd034]
+[    0.000000] earlycon: Early serial console at MMIO 0xd0012000 (options '')
+[    0.000000] bootconsole [uart0] enabled
+[    0.000000] efi: Getting EFI parameters from FDT:
+[    0.000000] efi: UEFI not found.
+[    0.000000] cma: Reserved 16 MiB at 0x000000003f000000
+[    0.000000] psci: probing for conduit method from DT.
+[    0.000000] psci: PSCIv1.0 detected in firmware.
+[    0.000000] psci: Using standard PSCI v0.2 function IDs
+[    0.000000] psci: MIGRATE_INFO_TYPE not supported.
+[    0.000000] PERCPU: Embedded 14 pages/cpu @ffffffc03efc8000 s18944 r8192 d30208 u57344
+[    0.000000] Detected VIPT I-cache on CPU0
+[    0.000000] CPU features: enabling workaround for ARM erratum 845719
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 257536
+[    0.000000] Kernel command line: console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 mtdparts=spi0.0:1M(nor-flash) root=/dev/mmcblk0p1 rw rootwait
+[    0.000000] PID hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.000000] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes)
+[    0.000000] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes)
+[    0.000000] software IO TLB [mem 0x39c00000-0x3dc00000] (64MB) mapped at [ffffffc039c00000-ffffffc03dbfffff]
+[    0.000000] Memory: 935200K/1046528K available (7366K kernel code, 446K rwdata, 2340K rodata, 272K init, 248K bss, 94944K reserved, 16384K cma-reserved)
+[    0.000000] Virtual kernel memory layout:
+[    0.000000]     vmalloc : 0xffffff8000000000 - 0xffffffbdbfff0000   (   246 GB)
+[    0.000000]     vmemmap : 0xffffffbdc0000000 - 0xffffffbfc0000000   (     8 GB maximum)
+[    0.000000]               0xffffffbdc0000000 - 0xffffffbdc1000000   (    16 MB actual)
+[    0.000000]     fixed   : 0xffffffbffa7fd000 - 0xffffffbffac00000   (  4108 KB)
+[    0.000000]     PCI I/O : 0xffffffbffae00000 - 0xffffffbffbe00000   (    16 MB)
+[    0.000000]     modules : 0xffffffbffc000000 - 0xffffffc000000000   (    64 MB)
+[    0.000000]     memory  : 0xffffffc000000000 - 0xffffffc040000000   (  1024 MB)
+[    0.000000]       .init : 0xffffffc0009fd000 - 0xffffffc000a41000   (   272 KB)
+[    0.000000]       .text : 0xffffffc000080000 - 0xffffffc0009fca54   (  9715 KB)
+[    0.000000]       .data : 0xffffffc000a58000 - 0xffffffc000ac7800   (   446 KB)
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.000000] Preemptible hierarchical RCU implementation.
+[    0.000000] 	Build-time adjustment of leaf fanout to 64.
+[    0.000000] 	RCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=2.
+[    0.000000] RCU: Adjusting geometry for rcu_fanout_leaf=64, nr_cpu_ids=2
+[    0.000000] NR_IRQS:64 nr_irqs:64 0
+[    0.000000] GIC: Using split EOI/Deactivate mode
+[    0.000000] CPU0: found redistributor 0 region 0:0x00000000d1d40000
+[    0.000000] Architected cp15 timer(s) running at 12.50MHz (phys).
+[    0.000000] clocksource: arch_sys_counter: mask: 0xffffffffffffff max_cycles: 0x2e2049cda, max_idle_ns: 440795202628 ns
+[    0.000004] sched_clock: 56 bits at 12MHz, resolution 80ns, wraps every 4398046511080ns
+[    0.008389] Console: colour dummy device 80x25
+[    0.012896] Calibrating delay loop (skipped), value calculated using timer frequency.. 25.00 BogoMIPS (lpj=50000)
+[    0.023450] pid_max: default: 32768 minimum: 301
+[    0.028254] Security Framework initialized
+[    0.032449] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes)
+[    0.039316] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes)
+[    0.047135] Initializing cgroup subsys memory
+[    0.051565] Initializing cgroup subsys hugetlb
+[    0.056344] EFI services will not be available.
+[    0.060950] ASID allocator initialised with 65536 entries
+[    0.102632] Detected VIPT I-cache on CPU1
+[    0.102657] CPU1: found redistributor 1 region 0:0x00000000d1d60000
+[    0.102681] CPU1: Booted secondary processor [410fd034]
+[    0.102732] Brought up 2 CPUs
+[    0.121652] SMP: Total of 2 processors activated.
+[    0.126496] CPU features: detected feature: GIC system register CPU interface
+[    0.133844] CPU: All CPU(s) started at EL2
+[    0.138065] alternatives: patching kernel code
+[    0.145589] DMI not present or invalid.
+[    0.149722] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.159701] futex hash table entries: 512 (order: 4, 65536 bytes)
+[    0.166609] xor: measuring software checksum speed
+[    0.211528]    8regs     :  1980.000 MB/sec
+[    0.255789]    8regs_prefetch:  1759.000 MB/sec
+[    0.300403]    32regs    :  2194.000 MB/sec
+[    0.344659]    32regs_prefetch:  1980.000 MB/sec
+[    0.349333] xor: using function: 32regs (2194.000 MB/sec)
+[    0.354904] pinctrl core: initialized pinctrl subsystem
+[    0.361248] NET: Registered protocol family 16
+[    0.377805] cpuidle: using governor ladder
+[    0.393964] cpuidle: using governor menu
+[    0.398125] vdso: 2 pages (1 code @ ffffffc000a5d000, 1 data @ ffffffc000a5c000)
+[    0.406376] DMA: preallocated 256 KiB pool for atomic allocations
+[    0.412695] Serial: AMBA PL011 UART driver
+[    0.418253] d0012000.serial: ttyMV0 at MMIO 0xd0012000 (irq = 8, base_baud = 1562500) is a mvebu-uart
+[    0.427709] console [ttyMV0] enabled
+[    0.427709] console [ttyMV0] enabled
+[    0.435045] bootconsole [uart0] disabled
+[    0.435045] bootconsole [uart0] disabled
+[    0.443977] armada-3700-pinctrl d0013830.north-bridge-pinctrl: registered pinctrl driver
+[    0.452736] armada-3700-pinctrl d0018830.south-bridge-pinctrl: registered pinctrl driver
+[    0.550319] raid6: int64x1  gen()   397 MB/s
+[    0.622292] raid6: int64x1  xor()   397 MB/s
+[    0.694415] raid6: int64x2  gen()   595 MB/s
+[    0.766403] raid6: int64x2  xor()   514 MB/s
+[    0.838424] raid6: int64x4  gen()   863 MB/s
+[    0.910480] raid6: int64x4  xor()   632 MB/s
+[    0.982550] raid6: int64x8  gen()   987 MB/s
+[    1.054586] raid6: int64x8  xor()   627 MB/s
+[    1.126700] raid6: neonx1   gen()   630 MB/s
+[    1.198706] raid6: neonx1   xor()   648 MB/s
+[    1.270806] raid6: neonx2   gen()   999 MB/s
+[    1.342831] raid6: neonx2   xor()   864 MB/s
+[    1.414894] raid6: neonx4   gen()  1303 MB/s
+[    1.486938] raid6: neonx4   xor()   998 MB/s
+[    1.558976] raid6: neonx8   gen()  1425 MB/s
+[    1.631026] raid6: neonx8   xor()  1044 MB/s
+[    1.635085] raid6: using algorithm neonx8 gen() 1425 MB/s
+[    1.640746] raid6: .... xor() 1044 MB/s, rmw enabled
+[    1.646139] raid6: using intx1 recovery algorithm
+[    1.651632] gpio-regulator soc:internal-regs:regulator@0: Could not obtain regulator setting GPIOs: -517
+[    1.662133] vgaarb: loaded
+[    1.664959] usbcore: registered new interface driver usbfs
+[    1.670624] usbcore: registered new interface driver hub
+[    1.676193] usbcore: registered new device driver usb
+[    1.682051] i2c i2c-0:  PXA I2C adapter
+[    1.686374] i2c i2c-1:  PXA I2C adapter
+[    1.690155] pps_core: LinuxPPS API ver. 1 registered
+[    1.695028] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    1.704854] PTP clock support registered
+[    1.708723] dmi: Firmware registration failed.
+[    1.714197] clocksource: Switched to clocksource arch_sys_counter
+[    1.725898] NET: Registered protocol family 2
+[    1.730897] TCP established hash table entries: 8192 (order: 4, 65536 bytes)
+[    1.737970] TCP bind hash table entries: 8192 (order: 5, 131072 bytes)
+[    1.744800] TCP: Hash tables configured (established 8192 bind 8192)
+[    1.751638] UDP hash table entries: 512 (order: 2, 16384 bytes)
+[    1.757716] UDP-Lite hash table entries: 512 (order: 2, 16384 bytes)
+[    1.764461] NET: Registered protocol family 1
+[    1.769263] RPC: Registered named UNIX socket transport module.
+[    1.775485] RPC: Registered udp transport module.
+[    1.780267] RPC: Registered tcp transport module.
+[    1.785123] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    1.793875] audit: initializing netlink subsys (disabled)
+[    1.799534] audit: type=2000 audit(1.740:1): initialized
+[    1.805348] HugeTLB registered 2 MB page size, pre-allocated 0 pages
+[    1.819338] VFS: Disk quotas dquot_6.6.0
+[    1.823636] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    1.832081] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    1.839516] NFS: Registering the id_resolver key type
+[    1.844462] Key type id_resolver registered
+[    1.848818] Key type id_legacy registered
+[    1.853255] Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+[    1.859669] jffs2: version 2.2. (NAND) © 2001-2006 Red Hat, Inc.
+[    1.866648] fuse init (API version 7.23)
+[    1.873065] io scheduler noop registered
+[    1.877093] io scheduler cfq registered (default)
+[    1.883752] irq: Cannot allocate irq_descs @ IRQ38, assuming pre-allocated
+[    1.891065] irq: Cannot allocate irq_descs @ IRQ74, assuming pre-allocated
+[    1.898286] Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+[    1.907511] libphy: Fixed MDIO Bus: probed
+[    1.911484] tun: Universal TUN/TAP device driver, 1.6
+[    1.916768] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+[    1.923330] libphy: mdio_driver_register: mv88e6xxx
+[    1.928620] libphy: orion_mdio_bus: probed
+[    1.932809] mdio_bus d0032004.mdio-mi:00: mdio_device_register
+[    1.940297] mvneta d0030000.ethernet eth0: Using device tree mac address 1c:3b:f3:77:31:6f
+[    2.010334] sky2: driver version 1.30
+[    2.014276] e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
+[    2.019969] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    2.026331] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.3.0-k
+[    2.033561] igb: Copyright (c) 2007-2014 Intel Corporation.
+[    2.039381] igbvf: Intel(R) Gigabit Virtual Function Network Driver - version 2.0.2-k
+[    2.047336] igbvf: Copyright (c) 2009 - 2012 Intel Corporation.
+[    2.053513] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver - version 4.2.1-k
+[    2.061292] ixgbe: Copyright (c) 1999-2015 Intel Corporation.
+[    2.067587] ixgbevf: Intel(R) 10 Gigabit PCI Express Virtual Function Network Driver - version 2.12.1-k
+[    2.077236] ixgbevf: Copyright (c) 2009 - 2012 Intel Corporation.
+[    2.083414] ixgb: Intel(R) PRO/10GbE Network Driver - version 1.0.135-k2-NAPI
+[    2.090739] ixgb: Copyright (c) 1999-2008 Intel Corporation.
+[    2.097423] mv_xor d0060900.xor: Marvell shared XOR driver
+[    2.122779] mv_xor d0060900.xor: Marvell XOR (Descriptor Mode): ( xor cpy intr pq )
+[    2.150776] mv_xor d0060900.xor: Marvell XOR (Descriptor Mode): ( xor cpy intr pq )
+[    2.161046] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    2.169233] Unable to detect cache hierarchy from DT for CPU 0
+[    2.176075] brd: module loaded
+[    2.183266] loop: module loaded
+[    2.191232] armada_3700_spi d0010600.spi: fifo mode
+[    2.196991] m25p80 spi0.0: gd25lq80 (1024 Kbytes)
+[    2.201905] 1 cmdlinepart partitions found on MTD device spi0.0
+[    2.207697] Creating 1 MTD partitions on "spi0.0":
+[    2.212634] 0x000000000000-0x000000100000 : "nor-flash"
+[    2.219184] VFIO - User Level meta-driver version: 0.3
+[    2.225307] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    2.232006] ehci-pci: EHCI PCI platform driver
+[    2.236368] ehci-platform: EHCI generic platform driver
+[    2.242201] ehci-orion: EHCI orion driver
+[    2.246282] orion-ehci d005e000.usb: EHCI Host Controller
+[    2.251961] orion-ehci d005e000.usb: new USB bus registered, assigned bus number 1
+[    2.259619] orion-ehci d005e000.usb: irq 28, io mem 0xd005e000
+[    2.274207] orion-ehci d005e000.usb: USB 2.0 started, EHCI 1.00
+[    2.280822] hub 1-0:1.0: USB hub found
+[    2.284746] hub 1-0:1.0: 1 port detected
+[    2.289145] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+[    2.295400] ohci-pci: OHCI PCI platform driver
+[    2.300140] ohci-platform: OHCI generic platform driver
+[    2.305953] xhci-hcd d0058000.usb3: xHCI Host Controller
+[    2.311499] xhci-hcd d0058000.usb3: new USB bus registered, assigned bus number 2
+[    2.319362] xhci-hcd d0058000.usb3: hcc params 0x0a000998 hci version 0x100 quirks 0x00010090
+[    2.327982] xhci-hcd d0058000.usb3: irq 27, io mem 0xd0058000
+[    2.334668] hub 2-0:1.0: USB hub found
+[    2.338586] hub 2-0:1.0: 1 port detected
+[    2.343403] xhci-hcd d0058000.usb3: xHCI Host Controller
+[    2.348656] xhci-hcd d0058000.usb3: new USB bus registered, assigned bus number 3
+[    2.356532] usb usb3: We don't know the algorithms for LPM for this host, disabling LPM.
+[    2.365094] hub 3-0:1.0: USB hub found
+[    2.369014] hub 3-0:1.0: 1 port detected
+[    2.373895] mousedev: PS/2 mouse device common for all mice
+[    2.379798] i2c /dev entries driver
+[    2.384573] sdhci: Secure Digital Host Controller Interface driver
+[    2.390698] sdhci: Copyright(c) Pierre Ossman
+[    2.395314] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.401666] xenon-sdhci d00d0000.sdhci: Got CD GPIO
+[    2.406495] xenon-sdhci d00d0000.sdhci: Fail to get Xenon PHY type. Use default eMMC 5.1 PHY
+[    2.415253] xenon-sdhci d00d0000.sdhci: No vmmc regulator found
+[    2.421820] xenon-sdhci d00d8000.sdhci: Fail to get Xenon PHY type. Use default eMMC 5.1 PHY
+[    2.430288] xenon-sdhci d00d8000.sdhci: No vmmc regulator found
+[    2.436321] xenon-sdhci d00d8000.sdhci: No vqmmc regulator found
+[    2.474211] mmc0: SDHCI controller on d00d8000.sdhci [d00d8000.sdhci] using ADMA
+[    2.486157] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.493029] NET: Registered protocol family 17
+[    2.499620] bridge: automatic filtering via arp/ip/ip6tables has been deprecated. Update your scripts to load br_netfilter if you need this.
+[    2.514801] Distributed Switch Architecture driver version 0.1
+[    2.523118] mdio_bus d0032004.mdio-mi: Attach switch ID 0x004dd043
+[    2.531276] mdio_bus d0032004.mdio-mi: Atheros AR8236 sw_addr is 0
+[    2.539363] mvneta d0030000.ethernet eth0: [0]: detected a Atheros AR8236 switch
+[    2.548951] mvneta d0030000.ethernet eth0: ds->enabled_port_mask : 0x6
+[    2.557368] mvneta d0030000.ethernet eth0: ds->phys_mii_mask     : 0x3
+[    2.566062] mdio_bus d0032004.mdio-mi: Setup driver for AR8236
+[    2.607896] mmc0: MAN_BKOPS_EN bit is not set
+[    2.615996] mmc0: new high speed MMC card at address 0001
+[    2.625839] mmcblk0: mmc0:0001 4FTE4R 3.64 GiB 
+[    2.630607] mmcblk0boot0: mmc0:0001 4FTE4R partition 1 4.00 MiB
+[    2.636878] mmcblk0boot1: mmc0:0001 4FTE4R partition 2 4.00 MiB
+[    2.642967] mmcblk0rpmb: mmc0:0001 4FTE4R partition 3 512 KiB
+[    2.649226]  mmcblk0: p1 p2 p3 p4
+[    2.652918] mmcblk0: p4 size 7200768 extends beyond EOD, truncated
+[    2.902064] libphy: dsa slave smi: probed
+[    2.970401] Generic PHY dsa-0.0:00: attached PHY driver [Generic PHY] (mii_bus:phy_addr=dsa-0.0:00, irq=-1)
+[    2.980508] mvneta d0030000.ethernet eth0: [0]: create dsa slave device for port 1(lan0)
+[    3.050398] Generic PHY dsa-0.0:01: attached PHY driver [Generic PHY] (mii_bus:phy_addr=dsa-0.0:01, irq=-1)
+[    3.060325] mvneta d0030000.ethernet eth0: [0]: create dsa slave device for port 2(lan1)
+[    3.069084] 8021q: 802.1Q VLAN Support v1.8
+[    3.073038] Key type dns_resolver registered
+[    3.077842] mpls_gso: MPLS GSO support
+[    3.082275] registered taskstats version 1
+[    3.088299] Btrfs loaded
+[    3.091791] xenon-sdhci d00d0000.sdhci: Got CD GPIO
+[    3.096779] xenon-sdhci d00d0000.sdhci: Fail to get Xenon PHY type. Use default eMMC 5.1 PHY
+[    3.105528] xenon-sdhci d00d0000.sdhci: No vmmc regulator found
+[    3.142308] mmc1: SDHCI controller on d00d0000.sdhci [d00d0000.sdhci] using ADMA
+[    3.153353] VFS: Mounted root (squashfs filesystem) readonly on device 179:1.
+[    3.160854] Freeing unused kernel memory: 272K (ffffffc0009fd000 - ffffffc000a41000)
+[    3.168744] Freeing alternatives memory: 68K (ffffffc000a41000 - ffffffc000a52000)
+[    3.259478] random: nonblocking pool is initialized
+[    3.278368] init: Console is alive
+[    3.345920] SCSI subsystem initialized
+[    3.351726] uhci_hcd: USB Universal Host Controller Interface driver
+[    3.360421] usbcore: registered new interface driver usb-storage
+[    3.368450] init: - preinit -
+Press the [f] key and hit [enter] to enter failsafe mode
+Press the [1], [2], [3] or [4] key and hit [enter] to select the debug level
+[    6.638580] mount_root: mounting /dev/root
+mount /etc/ to ramfs...
+mount /mnt/ to ramfs...
+[    6.743347] EXT4-fs (mmcblk0p3): warning: mounting unchecked fs, running e2fsck is recommended
+[    6.755484] EXT4-fs (mmcblk0p3): mounted filesystem without journal. Opts: (null)
+[    7.186131] EXT4-fs (mmcblk0p4): recovery complete
+[    7.191281] EXT4-fs (mmcblk0p4): mounted filesystem with ordered data mode. Opts: (null)
+Setting up swapspace version 1, size = 671084544 bytes
+Starting eapconroller ...
+[    7.340587] procd: - early -
+[    7.372822] Adding 655356k swap on /opt/tplink/EAPController/data/swapfile.  Priority:-1 extents:3 across:671740k SS
+[    7.931981] procd: - ubus -
+[    7.986029] procd: - init -
+Please press Enter to activate this console.
+[    8.118527] ntfs: driver 2.1.32 [Flags: R/O MODULE].
+[    8.125833] ip_tables: (C) 2000-2006 Netfilter Core Team
+[    8.134375] nf_conntrack version 0.5.0 (7436 buckets, 29744 max)
+[    8.196123] usbcore: registered new interface driver ums-alauda
+[    8.202927] usbcore: registered new interface driver ums-cypress
+[    8.209591] usbcore: registered new interface driver ums-datafab
+[    8.216270] usbcore: registered new interface driver ums-freecom
+[    8.222771] usbcore: registered new interface driver ums-isd200
+[    8.229608] usbcore: registered new interface driver ums-jumpshot
+[    8.236491] usbcore: registered new interface driver ums-karma
+[    8.243338] usbcore: registered new interface driver ums-sddr09
+[    8.250212] usbcore: registered new interface driver ums-sddr55
+[    8.256847] usbcore: registered new interface driver ums-usbat
+[    8.266774] xt_time: kernel timezone is -0000
+[    9.956450] br-lan: port 1(lan0) entered blocking state
+[    9.966926] br-lan: port 1(lan0) entered disabled state
+[    9.972598] device lan0 entered promiscuous mode
+[    9.977600] device eth0 entered promiscuous mode
+[    9.992921] br-lan: port 2(lan1) entered blocking state
+[    9.998324] br-lan: port 2(lan1) entered disabled state
+[   10.003756] device lan1 entered promiscuous mode
+[INFO][smartip_lan_init 389] lan port count = 2.
+
+[INFO][main:2918]: tddp exit.
+[INFO][smartip_ubus_create_thread 133] create ubus thread successfully
+
+[   11.010230] mvneta d0030000.ethernet eth0: Link is Up - 100Mbps/Full - flow control off
+[   11.050586] dsa dsa@0 lan1: Link is Down
+[   11.970584] dsa dsa@0 lan0: Link is Down
+=====create new httpd.key and httpd.crt, based on smb_new.keystore=====
+=====create key_nginx_used ok=====
+[   12.974685] dsa dsa@0 lan0: Link is Up - 100Mbps/Full - flow control rx/tx
+[   12.981960] br-lan: port 1(lan0) entered blocking state
+[   12.987204] br-lan: port 1(lan0) entered forwarding state
+[INFO][smartip_handle_state 556] [D]ethernet CONNECTED
+
+[INFO][smartip_process_start 238] start udhcpc..........
+
+[INFO][smartip_exec_nowait 731] cmd = [udhcpc -i br-lan -p /tmp/udhcpc.pid -s echo -x hostname:OC200_77316F]
+
+ssh_enable is off
+eapcontroller detect failed
+eapcontroller detect failed
+eapcontroller detect failed

@@ -1,0 +1,54 @@
+{
+  "release": "OC200 Alpine 3.24.3 Beta 2",
+  "disk": {
+    "disk_id": "0x0C20BCD1",
+    "sectors": 7631744,
+    "bytes": 3907452928
+  },
+  "layout": {
+    "table": "DOS/MBR",
+    "dtb_lba": 896,
+    "kernel_lba": 1024,
+    "p1_start_lba": 131072,
+    "p1_sectors": 131072,
+    "p1_filesystem": "EROFS",
+    "p1_label": "rootfs",
+    "p2_start_lba": 262144,
+    "p2_sectors": 7369600,
+    "p2_filesystem": "F2FS",
+    "p2_label": "userdata"
+  },
+  "dtb": {
+    "file": "oc200-patched.dtb",
+    "bytes": 12345,
+    "sha256": "9b9955f746ffe2fba8d8f698876af4cedbed0adf1a6f08dd54819d549aeeb42b",
+    "offset_bytes": 458752,
+    "note": "v2 - moved system-led-pins/system-reset-pins to &pinctrl_sb to fix leds-gpio deferred probe"
+  },
+  "kernel": {
+    "file": "oc200-linux-6.18.59-Image",
+    "bytes": 45468160,
+    "sha256": "0d488e66bcb0fc50ca02e1e51de2c85dc7c4883a92e5fff71e4cc992a21b8af2",
+    "offset_bytes": 524288,
+    "note": "GPIO keys and Docker bridge/nftables networking built in (CONFIG_KEYBOARD_GPIO=y; core netfilter/NAT/veth symbols=y)"
+  },
+  "p1": {
+    "file": "alpine-3.24.3-rootfs.erofs",
+    "bytes": 52043776,
+    "sha256": "35cf1c79d992748eded533f78aa35c74dcb98dd5acb19f0f141fe99f1fc14ed2",
+    "offset_bytes": 67108864
+  },
+  "p2": {
+    "file": "alpine-3.24.3-userdata.f2fs",
+    "bytes": 3773235200,
+    "sha256": "011937d2905f30bfdd130cb9df11df53c869c263dd519ac2dfcf5e0e632beeb2",
+    "offset_bytes": 134217728
+  },
+  "image": {
+    "file": "oc200-alpine-3.24.3-full-emmc-image.img",
+    "bytes": 3907452928,
+    "sha256": "ef0540f88a01bea6f4cceedc62f00b630b0d26915602708b13fd972e43a83c69",
+    "note": "Includes current oc200-patched.dtb and Docker-capable kernel",
+    "release_note": "Beta 2: built-in Docker bridge/nftables/NAT/veth and GPIO-key support; WebUI hash-free"
+  }
+}

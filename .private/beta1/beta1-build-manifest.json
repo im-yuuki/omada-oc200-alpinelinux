@@ -1,0 +1,50 @@
+{
+  "release": "OC200 Alpine 3.24.3 Beta 1",
+  "disk": {
+    "disk_id": "0x0C20BCD1",
+    "sectors": 7631744,
+    "bytes": 3907452928
+  },
+  "layout": {
+    "table": "DOS/MBR",
+    "dtb_lba": 896,
+    "kernel_lba": 1024,
+    "p1_start_lba": 131072,
+    "p1_sectors": 131072,
+    "p1_filesystem": "EROFS",
+    "p1_label": "rootfs",
+    "p2_start_lba": 262144,
+    "p2_sectors": 7369600,
+    "p2_filesystem": "F2FS",
+    "p2_label": "userdata"
+  },
+  "dtb": {
+    "file": "oc200-6.18.59-swp-ports.dtb",
+    "bytes": 12381,
+    "sha256": "fc723d1f04d0b76c1803f32fbf200f7e9a787323a61fb4ad02de1026a235ddca",
+    "offset_bytes": 458752
+  },
+  "kernel": {
+    "file": "oc200-6.18.59-persist-f2fs-ar8236-f2fs-security-Image",
+    "bytes": 42179072,
+    "sha256": "d1d0cc1aca3c4b48958493c2c6e10a09f08920038b1da7ec8e8adc2c579ba3c6",
+    "offset_bytes": 524288
+  },
+  "p1": {
+    "file": "p1-beta1.erofs",
+    "bytes": 52043776,
+    "sha256": "35cf1c79d992748eded533f78aa35c74dcb98dd5acb19f0f141fe99f1fc14ed2",
+    "offset_bytes": 67108864
+  },
+  "p2": {
+    "file": "p2-beta1.f2fs",
+    "bytes": 3773235200,
+    "sha256": "011937d2905f30bfdd130cb9df11df53c869c263dd519ac2dfcf5e0e632beeb2",
+    "offset_bytes": 134217728
+  },
+  "image": {
+    "file": "oc200-alpine-3.24.3-beta1.img",
+    "bytes": 3907452928,
+    "sha256": "f3c3a0327511393c2f7418fa8914d38fd0cbc6ec9f51bdca0ec5585e0c9ec01d"
+  }
+}

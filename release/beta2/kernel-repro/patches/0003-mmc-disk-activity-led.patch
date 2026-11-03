@@ -1,0 +1,24 @@
+--- a/drivers/mmc/core/block.c
++++ b/drivers/mmc/core/block.c
+@@ -30,6 +30,7 @@
+ #include <linux/kdev_t.h>
+ #include <linux/kref.h>
+ #include <linux/blkdev.h>
++#include <linux/leds.h>
+ #include <linux/cdev.h>
+ #include <linux/mutex.h>
+ #include <linux/scatterlist.h>
+@@ -2466,9 +2467,13 @@
+ 			ret = mmc_blk_cqe_issue_flush(mq, req);
+ 			break;
+ 		case REQ_OP_WRITE:
++			/* Feed the GPIO disk-activity LED for MMC/eMMC block I/O. */
++			ledtrig_disk_activity(true);
+ 			card->written_flag = true;
+ 			fallthrough;
+ 		case REQ_OP_READ:
++			if (req_op(req) == REQ_OP_READ)
++				ledtrig_disk_activity(false);
+ 			if (host->cqe_enabled)
+ 				ret = mmc_blk_cqe_issue_rw_rq(mq, req);
+ 			else

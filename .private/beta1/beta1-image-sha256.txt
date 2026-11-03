@@ -1,0 +1,2 @@
+f3c3a0327511393c2f7418fa8914d38fd0cbc6ec9f51bdca0ec5585e0c9ec01d  oc200-alpine-3.24.3-beta1.img
+sha256  beta1-build-manifest.json  layout p2_start=0x40000 p1=64MiB  rootfs=beta1-rootfs  mktimestamp=note

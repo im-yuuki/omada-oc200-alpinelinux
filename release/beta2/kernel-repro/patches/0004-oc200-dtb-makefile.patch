@@ -1,0 +1,9 @@
+--- a/arch/arm64/boot/dts/marvell/Makefile
++++ b/arch/arm64/boot/dts/marvell/Makefile
+@@ -35,3 +35,6 @@
+ dtb-$(CONFIG_ARCH_MVEBU) += cn9132-clearfog.dtb
+ 
+ subdir-y	+= mmp
++
++# OC200 target for research build
++dtb-$(CONFIG_ARCH_MVEBU) += armada-3720-oc200.dtb
