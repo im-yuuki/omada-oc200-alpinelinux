@@ -1,0 +1,260 @@
+--- a/drivers/net/dsa/Kconfig
++++ b/drivers/net/dsa/Kconfig
+@@ -17,6 +17,13 @@ config NET_DSA_MV88E6XXX
+ 	  This enables support for most of the Marvell 88E6xxx models of
+ 	  Ethernet switch chips, except 88E6060.
+ 
++config NET_DSA_AR8236
++	tristate "Atheros AR8236 Ethernet switch chip support"
++	depends on NET_DSA
++	select NET_DSA_TAG_QCA
++	---help---
++	  This enables support for Atheros AR8236.
++
+ config NET_DSA_BCM_SF2
+ 	tristate "Broadcom Starfighter 2 Ethernet switch support"
+ 	depends on HAS_IOMEM && NET_DSA
+--- a/drivers/net/dsa/Makefile
++++ b/drivers/net/dsa/Makefile
+@@ -1,3 +1,4 @@
+ obj-$(CONFIG_NET_DSA_MV88E6060) += mv88e6060.o
+ obj-$(CONFIG_NET_DSA_MV88E6XXX) += mv88e6xxx.o
++obj-$(CONFIG_NET_DSA_AR8236) += ar8236.o
+ obj-$(CONFIG_NET_DSA_BCM_SF2)	+= bcm_sf2.o
+--- /dev/null
++++ b/drivers/net/dsa/ar8236.c
+@@ -0,0 +1,750 @@
++#include <linux/version.h>
++#include <linux/delay.h>
++#include <linux/etherdevice.h>
++#include <linux/ethtool.h>
++#include <linux/if_bridge.h>
++#include <linux/jiffies.h>
++#include <linux/list.h>
++#include <linux/mdio.h>
++#include <linux/module.h>
++#include <linux/of_mdio.h>
++#include <linux/netdevice.h>
++#include <linux/gpio/consumer.h>
++#include <linux/phy.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
++#include <net/dsa.h>
++#include <net/switchdev.h>
++#include "ar8236.h"
++
++#define AR8236_MIB_DESC(_s , _o, _n)	\
++	{			\
++		.size = (_s),	\
++		.offset = (_o),	\
++		.name = (_n),	\
++	}
++
++static struct ar8236_priv *ar8236_priv_date = NULL;
++static struct proc_dir_entry *ar8236_proc_dir = NULL;
++
++const struct ar8236_mib_desc ar8236_mibs[39] = {
++	AR8236_MIB_DESC(1, AR8236_STATS_RXBROAD, "RxBroad"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RXPAUSE, "RxPause"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RXMULTI, "RxMulti"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RXFCSERR, "RxFcsErr"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RXALIGNERR, "RxAlignErr"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RXRUNT, "RxRunt"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RXFRAGMENT, "RxFragment"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RX64BYTE, "Rx64Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RX128BYTE, "Rx128Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RX256BYTE, "Rx256Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RX512BYTE, "Rx512Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RX1024BYTE, "Rx1024Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RX1518BYTE, "Rx1518Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RXMAXBYTE, "RxMaxByte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RXTOOLONG, "RxTooLong"),
++	AR8236_MIB_DESC(2, AR8236_STATS_RXGOODBYTE, "RxGoodByte"),
++	AR8236_MIB_DESC(2, AR8236_STATS_RXBADBYTE, "RxBadByte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_RXOVERFLOW, "RxOverFlow"),
++	AR8236_MIB_DESC(1, AR8236_STATS_FILTERED, "Filtered"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXBROAD, "TxBroad"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXPAUSE, "TxPause"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXMULTI, "TxMulti"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXUNDERRUN, "TxUnderRun"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TX64BYTE, "Tx64Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TX128BYTE, "Tx128Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TX256BYTE, "Tx256Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TX512BYTE, "Tx512Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TX1024BYTE, "Tx1024Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TX1518BYTE, "Tx1518Byte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXMAXBYTE, "TxMaxByte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXOVERSIZE, "TxOverSize"),
++	AR8236_MIB_DESC(2, AR8236_STATS_TXBYTE, "TxByte"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXCOLLISION, "TxCollision"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXABORTCOL, "TxAbortCol"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXMULTICOL, "TxMultiCol"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXSINGLECOL, "TxSingleCol"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXEXCDEFER, "TxExcDefer"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXDEFER, "TxDefer"),
++	AR8236_MIB_DESC(1, AR8236_STATS_TXLATECOL, "TxLateCol"),
++};
++
++static int ar8236_reg_read(struct ar8236_priv *ps, uint32_t reg_addr)
++{
++	int reg_word_addr;
++	int phy_addr, reg_val;
++	unsigned short phy_val;
++	unsigned short tmp_val;
++	unsigned char  phy_reg;
++
++	/* change reg_addr to 16-bit word address, 32-bit aligned */
++	reg_word_addr = (reg_addr & 0xfffffffc) >> 1;
++
++	/* configure register high address */
++	phy_addr = 0x18;
++	phy_reg = 0x0;
++	phy_val = (unsigned short) ((reg_word_addr >> 8) & 0x1ff);  /* bit16-8 of reg address */
++	mdiobus_write_nested(ps->bus, phy_addr, phy_reg, phy_val);
++
++	/*
++	 * For some registers such as MIBs, since it is read/clear, we should
++	 * read the lower 16-bit register then the higher one
++	 */
++
++	/* read register in lower address */
++	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7); /* bit7-5 of reg address */
++	phy_reg = (unsigned char) (reg_word_addr & 0x1f);   /* bit4-0 of reg address */
++	phy_val = mdiobus_read_nested(ps->bus, phy_addr, phy_reg);
++
++	/* read register in higher address */
++	reg_word_addr++;
++	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7); /* bit7-5 of reg address */
++	phy_reg = (unsigned char) (reg_word_addr & 0x1f);   /* bit4-0 of reg address */
++	tmp_val = mdiobus_read_nested(ps->bus, phy_addr, phy_reg);
++	reg_val = (tmp_val << 16 | phy_val);
++
++	return reg_val;
++}
++
++static int ar8236_reg_write(struct ar8236_priv *ps, uint32_t reg_addr, uint32_t reg_val)
++{
++	int reg_word_addr;
++	int phy_addr;
++	unsigned short phy_val;
++	unsigned char phy_reg;
++
++	/* change reg_addr to 16-bit word address, 32-bit aligned */
++	reg_word_addr = (reg_addr & 0xfffffffc) >> 1;
++
++	/* configure register high address */
++	phy_addr = 0x18;
++	phy_reg = 0x0;
++	phy_val = (unsigned short) ((reg_word_addr >> 8) & 0x1ff);  /* bit16-8 of reg address */
++	mdiobus_write_nested(ps->bus, phy_addr, phy_reg, phy_val);
++
++	/*
++	 * For some registers such as ARL and VLAN, since they include BUSY bit
++	 * in lower address, we should write the higher 16-bit register then the
++	 * lower one
++	 */
++
++	/* read register in higher address */
++	reg_word_addr++;
++	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7); /* bit7-5 of reg address */
++	phy_reg = (unsigned char) (reg_word_addr & 0x1f);   /* bit4-0 of reg address */
++	phy_val = (unsigned short) ((reg_val >> 16) & 0xffff);
++	mdiobus_write_nested(ps->bus, phy_addr, phy_reg, phy_val);
++
++	/* write register in lower address */
++	reg_word_addr--;
++	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7); /* bit7-5 of reg address */
++	phy_reg = (unsigned char) (reg_word_addr & 0x1f);   /* bit4-0 of reg address */
++	phy_val = (unsigned short) (reg_val & 0xffff);
++	mdiobus_write_nested(ps->bus, phy_addr, phy_reg, phy_val);
++
++	return 0;
++}
++
++static int ar8236_phy_read(struct dsa_switch *ds, int port, int reg)
++{
++	struct ar8236_priv *priv = ds_to_priv(ds);
++
++	return mdiobus_read_nested(priv->bus, priv->sw_addr + port, reg);
++}
++
++static int ar8236_phy_write(struct dsa_switch *ds, int port, int reg, u16 val)
++{
++	struct ar8236_priv *priv = ds_to_priv(ds);
++
++	return mdiobus_write_nested(priv->bus, priv->sw_addr + port, reg, val);
++}
++
++static int ar8236_port_enable(struct dsa_switch *ds, int port,
++		  struct phy_device *phy)
++{
++	int val = 0;
++	struct ar8236_priv *priv = ds_to_priv(ds);
++
++	/* Port 0-5 is valid */
++	if ((port < 0) || (port > 5))
++		return -1;
++
++	val = ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(port));
++	val |= (4 << AR8236_PORT_CTRL_STATE_S);
++	ar8236_reg_write(priv, AR8236_REG_PORT_CTRL(port), val);
++
++	/* not cpu port, also enable phy of this port */
++	if (port != AR8236_CPU_PORT)
++	{
++		int phy_id = port -1; /* cpu-port0, phy0-port1, phy1-port2, etc ... */
++		int phy_val;
++
++		phy_val = ar8236_phy_read(ds, phy_id, MII_PHYSID1);
++		phy_val &= ~BMCR_PDOWN; /* 0 is power up */
++		ar8236_phy_write(ds, phy_id, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
++	}
++
++	return 0;
++}
++
++static void ar8236_port_disable(struct dsa_switch *ds, int port,
++		   struct phy_device *phy)
++{
++	int val = 0;
++	struct ar8236_priv *priv = ds_to_priv(ds);
++
++	/* Port 0-5 is valid */
++	if ((port < 0) || (port > 5))
++		return;
++
++	val = ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(port));
++	val &= ~AR8236_PORT_CTRL_STATE;
++	ar8236_reg_write(priv, AR8236_REG_PORT_CTRL(port), val);
++
++	/* not cpu port, also disable phy of this port */
++	if (port != AR8236_CPU_PORT)
++	{
++		int phy_id = port -1; /* cpu-port0, phy0-port1, phy1-port2, etc ... */
++		int phy_val;
++
++		phy_val = ar8236_phy_read(ds, phy_id, MII_PHYSID1);
++		phy_val |= BMCR_PDOWN; /* 1 is power down */
++		ar8236_phy_write(ds, phy_id, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
++	}
++
++	return;
++}
++
++static const char *ar8236_get_name(struct mii_bus *bus, int sw_addr)
++{
++	int phy_id;
++	int phy_reg;
++
++	phy_reg = mdiobus_read_nested(bus, sw_addr, MII_PHYSID1);
++	if (phy_reg < 0)
++		return NULL;
++	
++	phy_id = (phy_reg & 0xffff) << 16;
++	
++	phy_reg = mdiobus_read_nested(bus, sw_addr, MII_PHYSID2);
++	if (phy_reg < 0)
++		return NULL;
++
++	phy_id |= (phy_reg & 0xffff);
++

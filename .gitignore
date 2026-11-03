@@ -1,0 +1,31 @@
+# macOS / editors
+.DS_Store
+*~
+*.swp
+
+# Credentials and device session captures (keep local only)
+*credentials*
+*console*transcript*
+*console*.bin
+*.pid
+*.log
+*.stderr
+
+# Large build products and images (keep in external storage, not git)
+*.img
+*.sparse.img
+*.f2fs
+*.erofs
+*.squashfs
+*.uImage
+*.cpio
+*.cpio.gz
+*.tar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*-Image
+*.o
+*.ko
+vmlinux*
+__pycache__/

@@ -1,0 +1,17 @@
+mmc info
+Device: sdhci@d8000
+Manufacturer ID: 15
+OEM: 100
+Name: 4FTE4 
+Tran Speed: 52000000
+Rd Block Len: 512
+MMC version 5.1
+High Capacity: Yes
+Capacity: 3.6 GiB
+Bus Width: 8-bit
+Erase Group Size: 512 KiB
+HC WP Group Size: 8 MiB
+User Capacity: 3.6 GiB WRREL
+Boot Capacity: 4 MiB ENH
+RPMB Capacity: 512 KiB ENH
+Marvell>> 

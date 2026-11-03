@@ -1,0 +1,210 @@
+#ifndef __AR8236_H
+#define __AR8236_H
+
+#include <linux/if_vlan.h>
+#include <linux/gpio/consumer.h>
+
+
+#define AR8236_PORTS	6
+#define AR8236_ARL_ENTRY	1024
+#define AR8236_PHY_ID	0x004dd043
+#define AR8236_CPU_PORT	0
+
+#define BITS(_s, _n)	(((1UL << (_n)) - 1) << _s)
+
+#define AR8236_PORT_OFFSET(_i)		(0x0100 * (_i + 1))
+
+#define AR8236_REG_CTRL			0x0000
+#define   AR8236_CTRL_REVISION		BITS(0, 8)
+#define   AR8236_CTRL_REVISION_S	0
+#define   AR8236_CTRL_VERSION		BITS(8, 8)
+#define   AR8236_CTRL_VERSION_S		8
+#define   AR8236_CTRL_RESET		BIT(31)
+
+#define AR8236_REG_PORT_STATUS(_i)	(AR8236_PORT_OFFSET(_i) + 0x0000)
+#define   AR8236_PORT_STATUS_SPEED	BITS(0,2)
+#define   AR8236_PORT_STATUS_SPEED_S	0
+#define   AR8236_PORT_STATUS_TXMAC	BIT(2)
+#define   AR8236_PORT_STATUS_RXMAC	BIT(3)
+#define   AR8236_PORT_STATUS_TXFLOW	BIT(4)
+#define   AR8236_PORT_STATUS_RXFLOW	BIT(5)
+#define   AR8236_PORT_STATUS_DUPLEX	BIT(6)
+#define   AR8236_PORT_STATUS_TX_HALF_FLOW	BIT(7)
+#define   AR8236_PORT_STATUS_LINK_UP	BIT(8)
+#define   AR8236_PORT_STATUS_LINK_AUTO	BIT(9)
+#define   AR8236_PORT_STATUS_LINK_PAUSE	BIT(10)
+#define   AR8236_PORT_STATUS_LINK_FLOW_EN	BIT(12)
+
+#define AR8236_REG_PORT_CTRL(_i)	(AR8236_PORT_OFFSET(_i) + 0x0004)
+/* port forwarding state */
+#define   AR8236_PORT_CTRL_STATE	BITS(0, 3)
+#define   AR8236_PORT_CTRL_STATE_S	0
+#define   AR8236_PORT_CTRL_LEARN_LOCK	BIT(7)
+/* egress 802.1q mode */
+#define   AR8236_PORT_CTRL_VLAN_MODE	BITS(8, 2)
+#define   AR8236_PORT_CTRL_VLAN_MODE_S	8
+#define   AR8236_PORT_CTRL_IGMP_SNOOP	BIT(10)
+#define   AR8236_PORT_CTRL_HEADER	BIT(11)
+#define   AR8236_PORT_CTRL_MAC_LOOP	BIT(12)
+#define   AR8236_PORT_CTRL_SINGLE_VLAN	BIT(13)
+#define   AR8236_PORT_CTRL_LEARN	BIT(14)
+#define   AR8236_PORT_CTRL_MIRROR_TX	BIT(16)
+#define   AR8236_PORT_CTRL_MIRROR_RX	BIT(17)
+
+#define AR8236_REG_CPU_PORT		0x0078
+#define   AR8236_CPU_PORT_EN	BIT(8)
+
+#define AR8236_REG_ATU_FUNC0		0x0050
+#define   AR8236_ATU_OP			BITS(0, 3)
+#define   AR8236_ATU_OP_NOOP		0x0
+#define   AR8236_ATU_OP_FLUSH		0x1
+#define   AR8236_ATU_OP_LOAD		0x2
+#define   AR8236_ATU_OP_PURGE		0x3
+#define   AR8236_ATU_OP_FLUSH_UNLOCKED	0x4
+#define   AR8236_ATU_OP_FLUSH_PORT	0x5
+#define   AR8236_ATU_OP_GET_NEXT	0x6
+#define   AR8236_ATU_BUSY		BIT(3)
+#define   AR8236_ATU_PORT_NUM		BITS(8, 4)
+#define   AR8236_ATU_PORT_NUM_S		8
+#define   AR8236_ATU_FULL_VIO		BIT(12)
+#define   AR8236_ATU_ADDR5		BITS(16, 8)
+#define   AR8236_ATU_ADDR5_S		16
+#define   AR8236_ATU_ADDR4		BITS(24, 8)
+#define   AR8236_ATU_ADDR4_S		24
+
+#define AR8236_REG_ATU_FUNC1		0x0054
+#define   AR8236_ATU_ADDR3		BITS(0, 8)
+#define   AR8236_ATU_ADDR3_S		0
+#define   AR8236_ATU_ADDR2		BITS(8, 8)
+#define   AR8236_ATU_ADDR2_S		8
+#define   AR8236_ATU_ADDR1		BITS(16, 8)
+#define   AR8236_ATU_ADDR1_S		16
+#define   AR8236_ATU_ADDR0		BITS(24, 8)
+#define   AR8236_ATU_ADDR0_S		24
+
+#define AR8236_REG_ATU_FUNC2		0x0058
+#define   AR8236_ATU_PORTS		BITS(0, 6)
+#define   AR8236_ATU_PORTS_S	BIT(0)
+#define   AR8236_ATU_PORT0		BIT(0)
+#define   AR8236_ATU_PORT1		BIT(1)
+#define   AR8236_ATU_PORT2		BIT(2)
+#define   AR8236_ATU_PORT3		BIT(3)
+#define   AR8236_ATU_PORT4		BIT(4)
+#define   AR8236_ATU_PORT5		BIT(5)
+#define   AR8236_ATU_STATUS		BITS(16, 4)
+#define   AR8236_ATU_STATUS_S		16
+
+#define AR8236_REG_ATU_CTRL		0x005C
+#define   AR8236_ATU_CTRL_AGE_EN	BIT(17)
+#define   AR8236_ATU_CTRL_AGE_TIME	BITS(0, 16)
+#define   AR8236_ATU_CTRL_AGE_TIME_S	0
+#define   AR8236_ATU_CTRL_RES		BIT(20)
+
+#define AR8236_REG_MIB_FUNC		0x0080
+#define   AR8236_MIB_TIMER		BITS(0, 16)
+#define   AR8236_MIB_AT_HALF_EN		BIT(16)
+#define   AR8236_MIB_BUSY		BIT(17)
+#define   AR8236_MIB_FUNC		BITS(24, 3)
+#define   AR8236_MIB_FUNC_S		24
+#define   AR8236_MIB_FUNC_NO_OP		0x0
+#define   AR8236_MIB_FUNC_FLUSH		0x1
+#define   AR8236_MIB_FUNC_CAPTURE	0x3
+#define   AR8236_MIB_EN			BIT(30)
+
+#define AR8236_REG_PORT_VLAN(_i)	(AR8236_PORT_OFFSET((_i)) + 0x0008)
+#define   AR8236_PORT_VLAN_DEFAULT_ID	BITS(16, 12)
+#define   AR8236_PORT_VLAN_DEFAULT_ID_S	16
+#define   AR8236_PORT_VLAN_PRIORITY	BITS(29, 3)
+#define   AR8236_PORT_VLAN_PRIORITY_S	28
+
+#define AR8236_REG_PORT_VLAN2(_i)	(AR8236_PORT_OFFSET((_i)) + 0x000c)
+#define   AR8236_PORT_VLAN2_MEMBER	BITS(16, 7)
+#define   AR8236_PORT_VLAN2_MEMBER_S	16
+#define   AR8236_PORT_VLAN2_TX_PRIO	BIT(23)
+#define   AR8236_PORT_VLAN2_VLAN_MODE	BITS(30, 2)
+#define   AR8236_PORT_VLAN2_VLAN_MODE_S	30
+
+#define AR8236_REG_FLOOD_MASK		0x002c
+#define   AR8236_REG_FLOOD_MASK_IGMP_DP_S		8
+#define   AR8236_REG_FLOOD_MASK_BC_DP_S			25
+#define   AR8236_REG_FLOOD_MASK_MC_DP_S			16
+#define   AR8236_REG_FLOOD_MASK_UC_DP_S			0
+
+#define AR8236_STATS_RXBROAD		0x00
+#define AR8236_STATS_RXPAUSE		0x04
+#define AR8236_STATS_RXMULTI		0x08
+#define AR8236_STATS_RXFCSERR		0x0c
+#define AR8236_STATS_RXALIGNERR		0x10
+#define AR8236_STATS_RXRUNT		0x14
+#define AR8236_STATS_RXFRAGMENT		0x18
+#define AR8236_STATS_RX64BYTE		0x1c
+#define AR8236_STATS_RX128BYTE		0x20
+#define AR8236_STATS_RX256BYTE		0x24
+#define AR8236_STATS_RX512BYTE		0x28
+#define AR8236_STATS_RX1024BYTE		0x2c
+#define AR8236_STATS_RX1518BYTE		0x30
+#define AR8236_STATS_RXMAXBYTE		0x34
+#define AR8236_STATS_RXTOOLONG		0x38
+#define AR8236_STATS_RXGOODBYTE		0x3c
+#define AR8236_STATS_RXBADBYTE		0x44
+#define AR8236_STATS_RXOVERFLOW		0x4c
+#define AR8236_STATS_FILTERED		0x50
+#define AR8236_STATS_TXBROAD		0x54
+#define AR8236_STATS_TXPAUSE		0x58
+#define AR8236_STATS_TXMULTI		0x5c
+#define AR8236_STATS_TXUNDERRUN		0x60
+#define AR8236_STATS_TX64BYTE		0x64
+#define AR8236_STATS_TX128BYTE		0x68
+#define AR8236_STATS_TX256BYTE		0x6c
+#define AR8236_STATS_TX512BYTE		0x70
+#define AR8236_STATS_TX1024BYTE		0x74
+#define AR8236_STATS_TX1518BYTE		0x78
+#define AR8236_STATS_TXMAXBYTE		0x7c
+#define AR8236_STATS_TXOVERSIZE		0x80
+#define AR8236_STATS_TXBYTE		0x84
+#define AR8236_STATS_TXCOLLISION	0x8c
+#define AR8236_STATS_TXABORTCOL		0x90
+#define AR8236_STATS_TXMULTICOL		0x94
+#define AR8236_STATS_TXSINGLECOL	0x98
+#define AR8236_STATS_TXEXCDEFER		0x9c
+#define AR8236_STATS_TXDEFER		0xa0
+#define AR8236_STATS_TXLATECOL		0xa4
+
+struct ar8236_mib_desc {
+	unsigned int size;
+	unsigned int offset;
+	const char *name;
+};
+
+struct ar8236_arl_entry {
+	u8 port;
+	u8 status;
+	u8 mac[6];
+};
+
+/* port speed */
+enum {
+        AR8236_PORT_SPEED_10M = 0,
+        AR8236_PORT_SPEED_100M = 1,
+        AR8236_PORT_SPEED_1000M = 2,
+        AR8236_PORT_SPEED_ERR = 3,
+};
+
+struct ar8236_priv {
+	/* The dsa_switch this private structure is related to */
+	struct dsa_switch *ds;
+
+	/* MDIO bus and address on bus to use. When in single chip
+	 * mode, address is 0, and the switch uses multiple addresses
+	 * on the bus.  When in multi-chip mode, the switch uses a
+	 * single address which contains two registers used for
+	 * indirect access to more registers.
+	 */
+	struct mii_bus *bus;
+	int sw_addr;
+
+	u64 *mib_stats;
+	struct ar8236_arl_entry arl_table[AR8236_ARL_ENTRY];
+};
+
+#endif

@@ -1,0 +1,3 @@
+sf probe 0:0
+SF: Detected gd25lq80 with page size 256 Bytes, erase size 4 KiB, total 1 MiB
+Marvell>> 

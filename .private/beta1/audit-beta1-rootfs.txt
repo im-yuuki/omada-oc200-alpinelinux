@@ -1,0 +1,61 @@
+audit exit=0
+audit modified(U): 9, added(A): 30, missing(M): 0
+U etc/securetty
+U etc/group
+U etc/shells
+U etc/shadow
+U etc/ssh/sshd_config
+U etc/chrony/chrony.conf
+U etc/hostname
+U etc/inittab
+U etc/passwd
+ver bind-tools: The ISC DNS tools
+ver bind-tools: https://www.isc.org/bind/
+ver bind-tools: 1052 KiB
+ver curl: URL retrieval utility and library
+ver curl: https://curl.se/
+ver curl: 334 KiB
+ver ethtool: Utility for controlling network drivers and hardware
+ver ethtool: https://mirrors.edge.kernel.org/pub/software/network/ethtool/
+ver ethtool: 772 KiB
+ver f2fs-tools: Tools for the Flash-Friendly File System (F2FS)
+ver f2fs-tools: http://git.kernel.org/cgit/linux/kernel/git/jaegeuk/f2fs-tools.git
+ver f2fs-tools: 524 KiB
+ver gvim: Improved vi-style text editor (GTK3 GUI)
+ver gvim: https://www.vim.org/
+ver gvim: 3863 KiB
+ver strace: Diagnostic, debugging and instructional userspace tracer
+ver strace: https://strace.io
+ver strace: 1220 KiB
+ver tcpdump: Command-line packet analyzer
+ver tcpdump: https://www.tcpdump.org/
+ver tcpdump: 911 KiB
+ver tftp-hpa: Official tftp server
+ver tftp-hpa: https://www.kernel.org/pub/software/network/tftp/
+ver tftp-hpa: 132 KiB
+ver usbutils: USB Device Utilities
+ver usbutils: https://linux-usb.sourceforge.net/
+ver usbutils: 278 KiB
+ver vim: Improved vi-style text editor
+ver vim: https://www.vim.org/
+ver vim: 3595 KiB
+/rootfs/usr/bin/curl
+/rootfs/usr/bin/dig
+/rootfs/usr/bin/lsusb
+/rootfs/usr/bin/strace
+/rootfs/usr/bin/tcpdump
+/rootfs/usr/bin/tftp
+/rootfs/usr/bin/vim
+/rootfs/usr/sbin/ethtool
+/rootfs/usr/sbin/fsck.f2fs
+/rootfs/usr/sbin/mkfs.f2fs
+4755 /rootfs/bin/more
+4755 /rootfs/bin/tload
+sftp-ok
+/rootfs/etc/init.d/networking
+/rootfs/etc/init.d/chronyd
+/rootfs/etc/init.d/sshd
+zram/inittab/hostname/interfaces identical to old
+bootmisc hostname localmount loopback machine-id root seedrng sysctl zram 
+chronyd networking sshd 
+BusyBox v1.37.0 (2026-01-10 15:38:28 UTC) multi-call binary.

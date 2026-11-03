@@ -1,0 +1,14 @@
+--- a/drivers/net/dsa/qca/Kconfig
++++ b/drivers/net/dsa/qca/Kconfig
+@@ -1,4 +1,11 @@
+ # SPDX-License-Identifier: GPL-2.0-only
++config NET_DSA_AR8236
++	tristate "Atheros AR8236 Ethernet switch support"
++	depends on NET_DSA
++	select NET_DSA_TAG_QCA
++	help
++	  Support for the Atheros AR8236 Ethernet switch used by TP-Link OC200.
++
+ config NET_DSA_AR9331
+ 	tristate "Qualcomm Atheros AR9331 Ethernet switch support"
+ 	depends on NET_DSA

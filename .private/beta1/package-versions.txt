@@ -1,0 +1,13 @@
+vim=9.2.1202-r0
+curl=8.23.0-r0
+tftp-hpa=5.2-r7
+bind-tools=9.20.30-r0
+tcpdump=4.99.6-r1
+ethtool=7.0-r0
+strace=6.19-r1
+usbutils=019-r0
+f2fs-tools=1.16.0-r4
+openssh=10.3_p1-r1
+chrony=4.8-r7
+busybox=1.37.0-r31
+openrc=0.63.2-r0

@@ -1,0 +1,3 @@
+mmc list
+sdhci@d8000: 0 (eMMC)
+Marvell>> 
