@@ -1,0 +1,51 @@
+#!/bin/sh
+
+/bin/busybox --install -s /bin 2>/dev/null || true
+mkdir -p /run/sshd /run/ssh /tmp /root /dev/pts /var/log
+/bin/busybox mount -t proc proc /proc 2>/dev/null || true
+/bin/busybox mount -t sysfs sysfs /sys 2>/dev/null || true
+/bin/busybox mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+/bin/busybox mount -t devpts devpts /dev/pts 2>/dev/null || true
+/bin/busybox mount -t tmpfs -o mode=0755 tmpfs /run 2>/dev/null || true
+/bin/busybox mount -t tmpfs -o mode=1777 tmpfs /tmp 2>/dev/null || true
+mkdir -p /run/sshd /run/ssh
+
+if /sbin/ip link show lan0 >/dev/null 2>&1; then
+    /sbin/ip link set lan0 up 2>/dev/null || true
+    /sbin/udhcpc -i lan0 -f -q -n -t 10 -T 3 -A 1 >/run/udhcpc.log 2>&1 || true
+fi
+
+if [ ! -s /run/ssh/ssh_host_ed25519_key ]; then
+    /usr/bin/ssh-keygen -t ed25519 -f /run/ssh/ssh_host_ed25519_key -N '' >/run/ssh-keygen.log 2>&1 || true
+    /usr/bin/ssh-keygen -t ecdsa -b 256 -f /run/ssh/ssh_host_ecdsa_key -N '' >>/run/ssh-keygen.log 2>&1 || true
+    /usr/bin/ssh-keygen -t rsa -b 2048 -f /run/ssh/ssh_host_rsa_key -N '' >>/run/ssh-keygen.log 2>&1 || true
+    chmod 600 /run/ssh/ssh_host_*_key 2>/dev/null || true
+fi
+
+if /usr/sbin/sshd -t -f /etc/ssh/sshd_config >/run/sshd-check.log 2>&1; then
+    /usr/sbin/sshd -f /etc/ssh/sshd_config >/run/sshd-start.log 2>&1 || true
+else
+    echo 'sshd configuration check failed; see /run/sshd-check.log' >/dev/console
+fi
+
+hostname -F /etc/hostname 2>/dev/null || true
+
+# --- OC200 WebUI flash recovery (added for Beta-1 maintenance) ---
+# DHCP fallback: if the primary interface has no lease, try DSA port names.
+if ! ip -4 addr show lan0 2>/dev/null | grep -q inet; then
+    for _IF in swp1 swp2; do
+        if ip link show "$_IF" >/dev/null 2>&1; then
+            ip link set "$_IF" up 2>/dev/null || true
+            udhcpc -i "$_IF" -f -q -n -t 8 -T 3 -A 1 >/run/udhcpc-$_IF.log 2>&1 && break
+        fi
+    done
+fi
+
+# One-time session token: shown on the serial console, required by the
+# flash/verify/reboot endpoints to keep stray processes from writing eMMC.
+dd if=/dev/urandom bs=16 count=1 2>/dev/null | od -An -tx1 | tr -d ' \n' > /run/webui-token
+printf 'OC200 WebUI: open http://<board-ip>/ , token: %s\n' "$(cat /run/webui-token)" >/dev/console
+chmod 600 /run/webui-token
+
+# WebUI server (CGI binaries under /www/cgi-bin).
+/bin/busybox-extras httpd -p 80 -h /www >/run/httpd.log 2>&1 || true

@@ -1,0 +1,78 @@
+#!/bin/sh
+# POST /cgi-bin/flash?t=<token>&part=<mbr|dtb|kernel|p1|p2|raw>&lba=<n for raw>
+#   &start=<byte offset in device>&len=<bytes>&sha=<hex256>&total=<artifact total bytes>
+#   &final=<1|0>
+# Body: raw bytes streamed by the client. The chunk lands at the exact byte
+# offset (dd seek); its SHA-256 must match `sha`. For `dtb`/`raw` the final
+# chunk is zero-padded to the 512B sector boundary.
+. ./common.sh
+
+fail() { printf 'Content-Type: application/json\r\n\r\n{"ok":0,"err":"%s"}\n' "$1"; exit 1; }
+
+check_token || exit 1
+check_device || exit 1
+check_ram_recovery || exit 1
+check_parts_unmounted || exit 1
+check_cid || exit 1
+
+PART=$(get_param part); LBA=$(get_param lba)
+START=$(get_param start); LEN=$(get_param len)
+SHA=$(get_param sha); TOTAL=$(get_param total); FINAL=$(get_param final)
+
+case "$START$LEN$TOTAL" in ''|*[!0-9]*) fail "bad numeric params" ;; esac
+case "$FINAL" in 0|1) : ;; *) fail "bad final" ;; esac
+
+region_bounds "$PART" "$LBA" || exit 1
+[ "$START" -ge "$R_START" ] || fail "start before region"
+CUR_END=$((START + LEN))
+[ "$CUR_END" -le "$((R_START + R_MAX))" ] || fail "exceeds region end"
+[ "$TOTAL" -le "$R_MAX" ] || fail "total exceeds region"
+if [ -n "$SHA" ]; then
+	case "$SHA" in
+		*"[!0-9a-f]"*) fail "bad sha param" ;;
+	esac
+	[ ${#SHA} -eq 64 ] || fail "bad sha length"
+fi
+
+if [ "$FINAL" = "0" ] || [ "$PART" = "kernel" ] || [ "$PART" = "p1" ] || [ "$PART" = "p2" ] || [ "$PART" = "mbr" ]; then
+	[ "$((LEN % 512))" = "0" ] || fail "len not 512-aligned"
+fi
+
+CL=${CONTENT_LENGTH:-0}
+[ "$CL" = "$LEN" ] || fail "content-length $CL != len $LEN"
+
+TMP=/tmp/webchunk.bin
+rm -f $TMP
+head -c $LEN > $TMP
+[ "$(stat -c %s $TMP 2>/dev/null)" = "$LEN" ] || fail "short upload"
+
+GOT=$(sha256sum $TMP | awk '{print $1}')
+if [ -n "$SHA" ]; then
+	[ "$GOT" = "$SHA" ] || { rm -f $TMP; fail "sha mismatch: local $GOT"; }
+fi
+
+if [ "$FINAL" = "1" ]; then
+	# expected end of artifact in absolute bytes
+	case "$PART" in
+	raw)    EXPECT_END=$((LBA*512 + TOTAL)) ;;
+	*)      EXPECT_END=$((R_START + TOTAL)) ;;
+	esac
+	[ "$CUR_END" = "$EXPECT_END" ] || fail "final span mismatch: $CUR_END != $EXPECT_END"
+	if [ "$PART" = "dtb" ] || [ "$PART" = "raw" ]; then
+		PAD=$((512 - LEN % 512)); [ "$PAD" = "512" ] && PAD=0
+		if [ "$PAD" != "0" ]; then
+			dd if=/dev/zero of=$TMP bs=1 count=$PAD seek=$LEN conv=notrunc 2>/dev/null
+		fi
+	else
+		PAD=0
+	fi
+	WLEN=$((LEN + ${PAD:-0}))
+else
+	WLEN=$LEN
+fi
+
+dd if=$TMP of=$DEVICE bs=512 seek=$((START/512)) conv=notrunc 2>/dev/null
+rm -f $TMP
+[ "$FINAL" = "1" ] && sync
+
+printf 'Content-Type: application/json\r\n\r\n{"ok":1,"wrote":%s,"sha":"%s"}\n' "$WLEN" "$GOT"

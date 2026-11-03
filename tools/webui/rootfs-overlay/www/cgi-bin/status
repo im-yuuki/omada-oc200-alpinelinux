@@ -1,0 +1,20 @@
+#!/bin/sh
+# GET /cgi-bin/status — read-only board recovery state, no token needed.
+. ./common.sh
+
+CID=$(cat $CID_FILE 2>/dev/null)
+SIZE=$(cat /sys/block/mmcblk0/size 2>/dev/null)
+case "$(cat $CMDLINE_FILE 2>/dev/null)" in
+	*rdinit=*) RAM=1 ;;
+	*) RAM=0 ;;
+esac
+MOUNTED=$(grep 'mmcblk0p[0-9]' $MOUNTS_FILE 2>/dev/null | awk '{print $2}' | tr '\n' ' ')
+IPS=$(ip -4 addr show 2>/dev/null | awk '/inet /{print $2}' | tr '\n' ';')
+UPT=$(cat /proc/uptime 2>/dev/null | awk '{print int($1)}')
+TOKEN=1; [ -r /run/webui-token ] || TOKEN=0
+CIDGATE=1; [ -s /etc/webui-cid ] || CIDGATE=0
+DEV=0; [ -b "$DEVICE" ] && DEV=1
+
+printf 'Content-Type: application/json\r\n\r\n'
+printf '{"ok":1,"device":%s,"ram_boot":%s,"cid":"%s","size_sectors":%s,"mounted":"%s","ips":"%s","uptime_s":%s,"token":%s,"cid_gate":%s}\n' \
+	"$DEV" "$RAM" "$CID" "$SIZE" "$MOUNTED" "$IPS" "$UPT" "$TOKEN" "$CIDGATE"

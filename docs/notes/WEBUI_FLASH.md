@@ -50,7 +50,7 @@ booti 0x05000000 0x20000000:${initrd_size} 0x04f00000
 Notes:
 
 - `rdinit=/init` is mandatory — the flash CGIs gate on it.
-- Stage the DTB from `<archive>/research/emmc-image/erofs-stage/`.
+- Stage the DTB from `[đã xóa] <archive>/research/emmc-image/erofs-stage/`.
 - Do not run `saveenv`, `mmc write`, or `sf write`.
 
 ## Usage
