@@ -1,6 +1,6 @@
 # Beta 1 build notes (2026-11-01)
 
-Runbook: `/Users/Yuuki/Projects/oc200-alpine/BETA_BUILD.md` (layout section updated to match).
+Runbook: `docs/BETA_BUILD.md` (layout section updated to match).
 
 ## Deviations from the original runbook plan
 
@@ -38,7 +38,7 @@ Bottom line: enough source to reproduce the fixed kernel+DTB (pristine `linux-6.
 | erofs-stage/p2-beta1.f2fs | 3,773,235,200 | 011937d2905f30bfdd130cb9df11df53c869c263dd519ac2dfcf5e0e632beeb2 |
 | oc200-alpine-3.24.3-beta1.img | 3,907,452,928 | f3c3a0327511393c2f7418fa8914d38fd0cbc6ec9f51bdca0ec5585e0c9ec01d |
 
-Manifest: `research/emmc-image/beta1-build-manifest.json` (copy: `.private/beta1/beta1-build-manifest.json`; hash copy: `.private/beta1/beta1-image-sha256.txt`).
+Manifest: `beta1-build-manifest.json` (not kept in this repo; old build metadata, retained only in the local archive).
 
 Verification done: minirootfs tarball hash match; `apk audit` of beta1-rootfs exit 0 (0 missing, 9 U intentional config, 30 A intentional adds); binaries of all 9 beta packages present; `more`/`tload` 4755; fsck.erofs + fsck.f2fs -f clean; labels `rootfs`/`userdata`; MBR written/verified by build-image.py; kernel/DTB hashes match fixed inputs; image size matches DEVICE_SECTORS.
 
@@ -67,7 +67,7 @@ Source trees: `squashfs-initramfs/` (wrapper, unchanged) + `ram-tree-extracted/`
 - `check_device` in common.sh accepts a regular file only when `T_DEVICE` is
   overridden (test harness); production requires a block device.
 
-Testing done (`.private/beta1/test-webui-cgi.sh`, in ARM64 container against a
+Testing done (`tools/webui/test-webui-cgi.sh`, in ARM64 container against a
 fake 64 MiB device + `T_*` path overrides): token, RAM-gate, mounted-refusal,
 512-alignment, region bounds, raw LBA bound, CID gate, MBR/dtb-pad/chunked
 kernel writes + readback SHA, chunk-sha mismatch refusal — all pass. httpd

@@ -11,9 +11,8 @@ OC200 (Armada 3720) board.
 | `build/kernel/` | Kernel configs, config history, DTS, config-prep script |
 | `build/emmc-image/` | eMMC image build scripts, partition layouts, flash helper, readback logs |
 | `release/beta2/` | Release metadata: SHA256 sums, manifest, patched DTB and SPI-NOR image, kernel reproduction bundle |
-| `tools/` | Serial/RFC2217 helper scripts for the board, TFTP recovery server, backup receiver |
+| `tools/` | Serial/RFC2217 helper scripts for the board, TFTP recovery server, backup receiver, WebUI test harness (`tools/webui/`) |
 | `research/` | Device U-Boot logs, boot log, AR8236 switch driver notes/code |
-| `.private/beta1/` | Beta 1 build notes and audit output |
 
 ## Not in this repository
 
