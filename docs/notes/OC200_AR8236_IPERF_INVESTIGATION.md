@@ -140,7 +140,7 @@ advertise gigabit; the switch hardware cannot do that.
 Relevant code:
 
 ```text
-<archive>/research/kernel/linux-6.18.59/drivers/net/dsa/qca/ar8236.c
+release/beta2/kernel-repro/drivers/net/dsa/qca/ar8236.c
 ```
 
 The setup path enables flow-related state on user ports, while the fixed CPU
@@ -155,7 +155,7 @@ line rate, while board-to-host traffic sees congestion and TCP retransmits.
 The active tagger is:
 
 ```text
-<archive>/research/kernel/linux-6.18.59/net/dsa/tag_qca.c
+linux-6.18.59/net/dsa/tag_qca.c
 ```
 
 It uses the modern DSA etype-header helpers. The old vendor implementation is

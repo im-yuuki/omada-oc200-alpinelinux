@@ -6,7 +6,7 @@ Runbook: `docs/BETA_BUILD.md` (layout section updated to match).
 
 1. Rootfs rebased fresh instead of `apk fix` on `ssh-rootfs` (user request,担心 copy 不完整).
    - Source: retained `alpine-minirootfs-3.24.3-aarch64.tar.gz` (SHA-256 verified `4d3f80af…`).
-   - Tree: `[đã xóa] <archive>/research/alpine/3.24.3/beta1-rootfs/` — `ssh-rootfs` untouched, used as migration reference.
+   - Tree: `not-retained/research/alpine/3.24.3/beta1-rootfs/` — `ssh-rootfs` untouched, used as migration reference.
    - Native ARM64 OrbStack container; `apk add` the old world set (+ fixes below); `prepare-rootfs-persistent.sh` applied; config migrated file-by-file from `ssh-rootfs`.
 2. World delta vs old rootfs: `procps` → `procps-ng` (package renamed); added `ifupdown-ng` explicitly (needed by `networking` init + `use ipv6-ra`; old tree had it as a dep).
 3. chrony UID pinned to old layout 124:124 (chrony package auto-created 100:101; explicit sed + `chown -R 124:124 var/lib/chrony`).
@@ -22,7 +22,7 @@ Runbook: `docs/BETA_BUILD.md` (layout section updated to match).
 
 Bottom line: enough source to reproduce the fixed kernel+DTB (pristine `linux-6.18.59.tar.xz` + modified in-tree files + configs + documented build flow in `build/kernel/BUILD_CONFIG.md`), with gaps:
 
-- No git history in `<archive>/research/kernel/linux-6.18.59/`; four deltas exist only live in-tree and are NOT exported as patches:
+- No git history in the kernel tree. When this was written, four deltas existed only in-tree; they are now exported in `release/beta2/kernel-repro/patches`, and tarball + patches reproduces the modified tree:
   1. `drivers/net/dsa/qca/ar8236.c` + `ar8236.h` (final flow-control/phylink version — `research/ar8236/ar8236-modern.c` is a STALE draft missing exactly the flow-control change),
   2. `drivers/mmc/core/block.c` (Cloud LED `ledtrig_disk_activity` — undocumented as diff),
   3. `qca/Kconfig`, `qca/Makefile`, `marvell/Makefile` wiring.
@@ -30,7 +30,7 @@ Bottom line: enough source to reproduce the fixed kernel+DTB (pristine `linux-6.
 - Toolchain (docker `oc200-kernel-builder`, aarch64 cross toolchain, dtc) not in workspace; no build log for the final fixed Image.
 - Recommended follow-up (not done yet): export the four in-tree deltas as patch files + hashes.
 
-## Artifacts (all under <archive>/research/emmc-image/ except rootfs)
+## Artifacts (Beta 1 intermediates, not retained)
 
 | Artifact | Bytes | SHA-256 |
 |---|---|---|
@@ -38,7 +38,7 @@ Bottom line: enough source to reproduce the fixed kernel+DTB (pristine `linux-6.
 | erofs-stage/p2-beta1.f2fs | 3,773,235,200 | 011937d2905f30bfdd130cb9df11df53c869c263dd519ac2dfcf5e0e632beeb2 |
 | oc200-alpine-3.24.3-beta1.img | 3,907,452,928 | f3c3a0327511393c2f7418fa8914d38fd0cbc6ec9f51bdca0ec5585e0c9ec01d |
 
-Manifest: `beta1-build-manifest.json` (not kept in this repo; old build metadata, retained only in the local archive).
+Manifest: `beta1-build-manifest.json` (not kept in this repo; old build metadata, not kept in this repository).
 
 Verification done: minirootfs tarball hash match; `apk audit` of beta1-rootfs exit 0 (0 missing, 9 U intentional config, 30 A intentional adds); binaries of all 9 beta packages present; `more`/`tload` 4755; fsck.erofs + fsck.f2fs -f clean; labels `rootfs`/`userdata`; MBR written/verified by build-image.py; kernel/DTB hashes match fixed inputs; image size matches DEVICE_SECTORS.
 
@@ -49,8 +49,8 @@ artifact lên board xử lí phần flash để tiện maintain").
 
 | Artifact | Bytes | SHA-256 |
 |---|---|---|
-| [đã xóa] out/oc200-squashfs-initramfs-webui.uImage | 11,632,578 | edef3bcc20a2d59bcaad530ca49ed8149034322e3c5ef95866292763a3534e61 |
-| [đã xóa] out/oc200-alpine-3.24.3-ssh-webui.squashfs | 10,788,864 | 4398d3235853994020067cf170fa1ac9266e11c4d7e4b151a7c02dc2ce56a826 |
+| not-present/out/out/oc200-squashfs-initramfs-webui.uImage | 11,632,578 | edef3bcc20a2d59bcaad530ca49ed8149034322e3c5ef95866292763a3534e61 |
+| not-present/out/out/oc200-alpine-3.24.3-ssh-webui.squashfs | 10,788,864 | 4398d3235853994020067cf170fa1ac9266e11c4d7e4b151a7c02dc2ce56a826 |
 
 Source trees: `squashfs-initramfs/` (wrapper, unchanged) + `ram-tree-extracted/`
 (squashfs content) with additions:
@@ -85,11 +85,11 @@ pinctrl device (`&pinctrl_sb` = `pinctrl@18800`), so `leds-gpio` and
 `gpio-keys` deferred probe forever with "reason unknown".
 
 **Fix:** move `system-led-pins` and `system-reset-pins` into `&pinctrl_sb`
-reference. Source: `<archive>/research/kernel/linux-6.18.59/arch/arm64/boot/dts/marvell/armada-3720-oc200.dts`.
+reference. Source: `release/beta2/kernel-repro/board-dts/armada-3720-oc200.dts`.
 
 | Artifact | Bytes | SHA-256 |
 |---|---|---|
-| [đã xóa] out/oc200-6.18.59-swp-ports.dtb (v2) | 12,345 | 9b9955f746ffe2fba8d8f698876af4cedbed0adf1a6f08dd54819d549aeeb42b |
+| not-present/out/out/oc200-6.18.59-swp-ports.dtb (v2) | 12,345 | 9b9955f746ffe2fba8d8f698876af4cedbed0adf1a6f08dd54819d549aeeb42b |
 
 **Verified on board:** after flashing DTB v2 to LBA 896, `/sys/class/leds/system-led`
 appears, `/sys/kernel/debug/devices_deferred` is empty, LED blinks on disk I/O
@@ -126,7 +126,7 @@ longer present; the old build directory was preserved.
 
 | Artifact | Bytes | SHA-256 |
 |---|---:|---|
-| `<archive>/out/oc200-linux-6.18.59-Image` | 42,244,608 | `93d2d9ff8ed6f1998383682900cb169700ad653a3184b814f3ac076ecc79a62a` |
+| `oc200-linux-6.18.59-Image` | 42,244,608 | `93d2d9ff8ed6f1998383682900cb169700ad653a3184b814f3ac076ecc79a62a` |
 
 The kernel includes `drivers/input/keyboard/gpio_keys.o` built-in. The full
 eMMC image kernel slot was replaced at LBA 0x400 and zero-padded to the p1
@@ -136,8 +136,8 @@ boundary; bytes outside the kernel slot were unchanged. New full-image SHA-256:
 The recovery WebUI pair was rebuilt with the current full-image and kernel
 hashes:
 
-- `<archive>/out/oc200-recovery-initramfs.uImage`: `ab286e4f2470f75caa0e5c38a8d65a388c3f8d8ecfbc694ec8fe9aeb77ca0c48`
-- `<archive>/out/oc200-recovery.squashfs`: `5b32dfe622b280740348dd70aa42617d068ef46f1108f5b92445c523cfb4edb9`
+- `oc200-recovery-initramfs.uImage`: `ab286e4f2470f75caa0e5c38a8d65a388c3f8d8ecfbc694ec8fe9aeb77ca0c48`
+- `oc200-recovery.squashfs`: `5b32dfe622b280740348dd70aa42617d068ef46f1108f5b92445c523cfb4edb9`
 
 The recovery uImage's SquashFS was inspected and contains the updated WebUI
 hashes.
@@ -159,7 +159,7 @@ for Docker NAT chain creation.
 
 | Artifact | Bytes | SHA-256 |
 |---|---:|---|
-| `<archive>/out/oc200-linux-6.18.59-Image` | 42,785,280 | `d825afc0203f5b4be4aacb23fbd258e77411295097476a714bce7a5a6dc788c1` |
+| `oc200-linux-6.18.59-Image` | 42,785,280 | `d825afc0203f5b4be4aacb23fbd258e77411295097476a714bce7a5a6dc788c1` |
 
 The kernel was patched into the full image kernel slot (LBA 0x400 to p1),
 without changing bytes outside that slot. New full image SHA-256:
@@ -167,8 +167,8 @@ without changing bytes outside that slot. New full image SHA-256:
 
 Recovery pair rebuilt with the new WebUI hashes:
 
-- `<archive>/out/oc200-recovery-initramfs.uImage`: `a33659674619b480922ee2e335c0235169318d587fde4205c595ca2f72315587`
-- `<archive>/out/oc200-recovery.squashfs`: `8f10f607aa501ad682845b579cef2bc8ea0f777ec4ee2c5caca1b440b0507578`
+- `oc200-recovery-initramfs.uImage`: `a33659674619b480922ee2e335c0235169318d587fde4205c595ca2f72315587`
+- `oc200-recovery.squashfs`: `8f10f607aa501ad682845b579cef2bc8ea0f777ec4ee2c5caca1b440b0507578`
 
 ## WebUI hash policy (2026-11-02)
 
@@ -179,8 +179,8 @@ the readback SHA for comparison against the distributed `SHA256SUMS.txt`.
 Recovery pair rebuilt and inspected; no 64-hex artifact hashes remain in the
 embedded UI.
 
-- `<archive>/out/oc200-recovery-initramfs.uImage`: `d098fd2d129d5d926273cd01f210879ca348a84f72ef72c7ae223d75644767f2`
-- `<archive>/out/oc200-recovery.squashfs`: `af077a374d577622fe47782e47c22d73a3fb664461c062d801f114a002d742be`
+- `oc200-recovery-initramfs.uImage`: `d098fd2d129d5d926273cd01f210879ca348a84f72ef72c7ae223d75644767f2`
+- `oc200-recovery.squashfs`: `af077a374d577622fe47782e47c22d73a3fb664461c062d801f114a002d742be`
 
 ## Not done (by request)
 

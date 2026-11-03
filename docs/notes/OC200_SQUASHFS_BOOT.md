@@ -33,7 +33,7 @@ setenv bootargs console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 rdinit=/in
 booti 0x05000000 0x20000000:${initrd_size} 0x04f00000
 ```
 
-Stage the current DTB from `[đã xóa] <archive>/research/emmc-image/erofs-stage/` as shown; its
+Stage the current DTB from `not-retained/research/emmc-image/erofs-stage/` as shown; its
 SHA-256 and current TFTP/recovery guidance are in `BETA_BUILD.md`. Do not run
 `saveenv`, `mmc write`, or `sf write`.
 

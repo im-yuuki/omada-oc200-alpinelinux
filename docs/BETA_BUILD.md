@@ -57,14 +57,14 @@ keep an untouched copy before experimenting.
 
 | Beta input | Path | Bytes | SHA-256 |
 |---|---|---:|---|
-| Persistent kernel with F2FS security-xattr fix | `[đã xóa] <archive>/research/emmc-image/erofs-stage/oc200-6.18.59-persist-f2fs-ar8236-f2fs-security-Image` | 42,179,072 | `d1d0cc1aca3c4b48958493c2c6e10a09f08920038b1da7ec8e8adc2c579ba3c6` |
-| Current OC200 DTB (`swp1`/`swp2`, USB, Cloud LED) | `[đã xóa] <archive>/research/emmc-image/erofs-stage/oc200-6.18.59-swp-ports.dtb` | 12,381 | `fc723d1f04d0b76c1803f32fbf200f7e9a787323a61fb4ad02de1026a235ddca` |
-| Prepared Alpine rootfs | `[đã xóa] <archive>/research/alpine/3.24.3/ssh-rootfs/` | — | mutable build input |
-| Kernel source/config | `<archive>/research/kernel/linux-6.18.59/`, `build/kernel/oc200-alpine-full.config` | — | source includes OC200 patches |
+| Persistent kernel with F2FS security-xattr fix | `not-retained/research/emmc-image/erofs-stage/oc200-6.18.59-persist-f2fs-ar8236-f2fs-security-Image` | 42,179,072 | `d1d0cc1aca3c4b48958493c2c6e10a09f08920038b1da7ec8e8adc2c579ba3c6` |
+| Current OC200 DTB (`swp1`/`swp2`, USB, Cloud LED) | `not-retained/research/emmc-image/erofs-stage/oc200-6.18.59-swp-ports.dtb` | 12,381 | `fc723d1f04d0b76c1803f32fbf200f7e9a787323a61fb4ad02de1026a235ddca` |
+| Prepared Alpine rootfs | `not-retained/research/alpine/3.24.3/ssh-rootfs/` | — | mutable build input |
+| Kernel source/config | `linux-6.18.59/` (rebuilt from `linux-6.18.59.tar.xz` + `release/beta2/kernel-repro/patches`), `build/kernel/oc200-alpine-full.config` | — | source includes OC200 patches |
 | Resolved build config snapshot | `build/kernel/oc200-6.18.59-resolved.config` | — | exact config used for the staged security kernel |
 
 Do not rebuild or substitute the fixed kernel/DTB for Beta 1. The retained full
-image `[đã xóa] <archive>/research/emmc-image/oc200-erofs-persist.img` is 3,907,452,928 bytes,
+image `not-retained/research/emmc-image/oc200-erofs-persist.img` is 3,907,452,928 bytes,
 SHA-256 `a958986e2e8d8cb50fe0a20d5e43c14a3bada2d987f2edb72943e08e23b8f5db`.
 Its manifest `build/emmc-image/build-manifest.json` identifies the earlier
 kernel (`13eb0d3f76aa8d80634db20a69b1d159942265ce0a98ea6101e44e12d6815554`)
@@ -76,12 +76,12 @@ Keep the RAM recovery pair and image:
 
 | Artifact | Path | Bytes | SHA-256 |
 |---|---|---:|---|
-| Recovery kernel | `[đã xóa] <archive>/research/kernel/oc200-6.18.59-alpine-full-usb-Image` | 40,327,680 | `97ce21c126ec6e4a312674238ff27f7b8bc0154d5e4886f69266f24740eda62e` |
-| SquashFS initramfs (embeds the rootfs) | `[đã xóa] <archive>/research/alpine/3.24.3/oc200-squashfs-initramfs.uImage` | 11,732,990 | `4e78cc46a733a6d721749c022646c114694666b9e88634074b1f5a71b6d04424` |
-| Standalone SquashFS | `[đã xóa] <archive>/research/alpine/3.24.3/oc200-alpine-3.24.3-ssh.squashfs` | 10,915,840 | `92057995d63c8265a0085a1c5c11045a9fa25dedf414c69de115786a599f7960` |
+| Recovery kernel | `not-retained/research/kernel/oc200-6.18.59-alpine-full-usb-Image` | 40,327,680 | `97ce21c126ec6e4a312674238ff27f7b8bc0154d5e4886f69266f24740eda62e` |
+| SquashFS initramfs (embeds the rootfs) | `not-retained/research/alpine/3.24.3/oc200-squashfs-initramfs.uImage` | 11,732,990 | `4e78cc46a733a6d721749c022646c114694666b9e88634074b1f5a71b6d04424` |
+| Standalone SquashFS | `not-retained/research/alpine/3.24.3/oc200-alpine-3.24.3-ssh.squashfs` | 10,915,840 | `92057995d63c8265a0085a1c5c11045a9fa25dedf414c69de115786a599f7960` |
 
 The DTB in the fixed-input table is also the current recovery DTB. Preserve
-original captures under `<archive>/research/backups/oc200-emmc-2026-11-01/`; they are
+original captures (release assets; metadata in `docs/notes/backup-2026-11-01/`); they are
 safety backups, not build outputs. Those reads were EOF-sized, not padded
 complete device images. The user-area dump is 3,907,452,928 bytes
 (SHA-256 `5f98143c8f95874499a22a2b474a6229b8b5ec33de0d93d1bdc54ef13a3d39ad`);
@@ -94,7 +94,7 @@ accessed. Check `metadata.json` and the backup README before using a dump.
 
 The kernel source/config and the minimal persistent initramfs sources remain
 in the workspace. The fixed kernel was built with the small embedded BusyBox
-`/init` at `[đã xóa] <archive>/research/alpine/3.24.3/erofs-initramfs/init`; it mounts EROFS plus
+`/init` at `not-retained/research/alpine/3.24.3/erofs-initramfs/init`; it mounts EROFS plus
 F2FS OverlayFS, then switches to the prepared Alpine root and standard OpenRC.
 This Beta locks the existing kernel artifact; the fixed kernel has not yet
 passed the persistent copy-up test on the board. Do not replace its initramfs
@@ -123,7 +123,7 @@ Start the native build container:
 ```sh
 docker run --rm -it --platform linux/arm64 \
   --mount "type=bind,src=$PWD,dst=/work" \
-  --mount "type=bind,src=[đã xóa] <archive>/research/alpine/3.24.3/ssh-rootfs,dst=/rootfs" \
+  --mount "type=bind,src=not-retained/research/alpine/3.24.3/ssh-rootfs,dst=/rootfs" \
   -w /work alpine:3.24.3 sh
 ```
 
@@ -146,7 +146,7 @@ repair and EROFS creation. Do not bypass APK scripts or triggers.
 `ssh-rootfs` is already the prepared persistent base; do not re-extract the
 minirootfs over it. For Beta 1 it was kept untouched as the config-migration
 reference and the tree was instead rebuilt fresh as
-`[đã xóa] <archive>/research/alpine/3.24.3/beta1-rootfs/` (native ARM64 container, all packages
+`not-retained/research/alpine/3.24.3/beta1-rootfs/` (native ARM64 container, all packages
 reinstalled, configs migrated from `ssh-rootfs`, chrony UID pinned at 124).
 The p1 build above uses `beta1-rootfs`. If rerunning any of this, still use
 the target root's repositories and signing keys:
@@ -189,7 +189,7 @@ payloads, BusyBox applets, trigger errors, or unexplained mode mismatches. Do
 not install persistent `iperf3`.
 
 The persistent setup script
-`[đã xóa] <archive>/research/alpine/3.24.3/erofs-initramfs/prepare-rootfs-persistent.sh` documents
+`not-retained/research/alpine/3.24.3/erofs-initramfs/prepare-rootfs-persistent.sh` documents
 base configuration. The current rootfs is already prepared; rerun that script
 only when deliberately bootstrapping a fresh rootfs, then recheck root
 password, interfaces, OpenRC links, SSH, chrony, zram, UTC, and package modes.
@@ -200,25 +200,25 @@ Inside the container, from `/work`:
 
 ```sh
 cd /work
-test ! -e [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
-test ! -e [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+test ! -e not-retained/research/emmc-image/erofs-stage/p1-beta1.erofs
+test ! -e not-retained/research/emmc-image/erofs-stage/p2-beta1.f2fs
 mkfs.erofs -z lz4hc,12 -L rootfs --all-root --preserve-mtime \
-  [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs \
-  [đã xóa] <archive>/research/alpine/3.24.3/beta1-rootfs
+  not-retained/research/emmc-image/erofs-stage/p1-beta1.erofs \
+  not-retained/research/alpine/3.24.3/beta1-rootfs
 
 P2_START=262144       # 0x40000
 IMAGE_SECTORS=7631744
 P2_SECTORS=$((IMAGE_SECTORS - P2_START))
 P2_BYTES=$((P2_SECTORS * 512))
-truncate -s "$P2_BYTES" [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
-mkfs.f2fs -f -l userdata [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
-fsck.f2fs -f [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+truncate -s "$P2_BYTES" not-retained/research/emmc-image/erofs-stage/p2-beta1.f2fs
+mkfs.f2fs -f -l userdata not-retained/research/emmc-image/erofs-stage/p2-beta1.f2fs
+fsck.f2fs -f not-retained/research/emmc-image/erofs-stage/p2-beta1.f2fs
 
-fsck.erofs [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
-blkid -p [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
-blkid -p [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
-stat -c '%s %n' [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs \
-  [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+fsck.erofs not-retained/research/emmc-image/erofs-stage/p1-beta1.erofs
+blkid -p not-retained/research/emmc-image/erofs-stage/p1-beta1.erofs
+blkid -p not-retained/research/emmc-image/erofs-stage/p2-beta1.f2fs
+stat -c '%s %n' not-retained/research/emmc-image/erofs-stage/p1-beta1.erofs \
+  not-retained/research/emmc-image/erofs-stage/p2-beta1.f2fs
 ```
 
 Labels must read `rootfs` and `userdata`; p1 must be at most 67,108,864 bytes
@@ -228,16 +228,16 @@ check or label verification fails.
 ## Assemble Beta 1
 
 `build/emmc-image/build-image.py` is the offline Beta assembler. It writes a
-new `[đã xóa] <archive>/research/emmc-image/oc200-alpine-3.24.3-beta1.img` and
-`[đã xóa khỏi repo] <archive>/research/emmc-image/beta1-build-manifest.json`; it must not replace the
+new `not-retained/research/emmc-image/oc200-alpine-3.24.3-beta1.img` and
+`not-retained/research/emmc-image/beta1-build-manifest.json`; it must not replace the
 rollback image. It checks the fixed kernel/DTB hashes, payload bounds, MBR
 layout, image size, and records component hashes.
 
 ```sh
 cd /work
 python3 build/emmc-image/build-image.py
-python3 -m json.tool [đã xóa khỏi repo] <archive>/research/emmc-image/beta1-build-manifest.json
-sha256sum [đã xóa] <archive>/research/emmc-image/oc200-alpine-3.24.3-beta1.img
+python3 -m json.tool not-retained/research/emmc-image/beta1-build-manifest.json
+sha256sum not-retained/research/emmc-image/oc200-alpine-3.24.3-beta1.img
 ```
 
 Verify before any board operation:
@@ -258,7 +258,7 @@ hash differs.
 ### RAM/TFTP recovery
 
 Use the retained SquashFS recovery files. The old U-Boot TFTP client used here
-needs the compatibility-server behavior in `<archive>/oc200-rfc2217/tftp_compat_server.py`;
+needs the compatibility-server behavior in `tools/oc200-rfc2217/tftp_compat_server.py`;
 the historical Linux TFTP host was `10.255.255.1`. OrbStack does not recreate
 the Linux host's UDP/69 forwarding or RFC2217 route. Configure and verify a
 TFTP endpoint reachable from the board on the Mac network first; use its actual
@@ -381,8 +381,8 @@ the image-length prefix hash before rebooting.
 - The fixed kernel/DTB pair above is the Beta baseline; the Beta image still
   needs new rootfs, labels, and partition boundary.
 - Earlier writes targeted `/dev/mmcblk0` user area only. SPI-NOR, eMMC
-  boot0/boot1, and RPMB were not written. Original captures remain under
-  `<archive>/research/backups/oc200-emmc-2026-11-01/`.
+  boot0/boot1, and RPMB were not written. Original captures are release assets (metadata in
+  `docs/notes/backup-2026-11-01/`).
 - The separate SPI-NOR default-environment intervention is documented in
   `docs/notes/OC200_BOOTLOADER_INTERVENTION_2026-11-01.md`; the NOR now matches
   the patched candidate, not the original dump hash. This does not alter the
@@ -399,7 +399,7 @@ the image-length prefix hash before rebooting.
 - Tester reports should include board CID masked, image hash, serial log,
   mounts, APK audit, service status, network, zram, CPUFreq, USB, and LED.
 - Original source provenance: TP-Link GPL archive
-  `<archive>/research/source/gpl_oc200.tar.bz2` (SHA-256
+  `gpl_oc200.tar.bz2` (SHA-256
   `f73f38857a661f481f7a56df67c5b6d6695fbb4dc580b9f7d2546806fd9524bc`),
   Alpine v3.24.3 aarch64 netboot archive (SHA-256
   `0ac085f19648562d33deb8bfdc339d747e40f456a49a43385d468ea46a888147`),
@@ -409,15 +409,15 @@ the image-length prefix hash before rebooting.
 Expected Beta build outputs:
 
 ```text
-[đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
-[đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
-[đã xóa] <archive>/research/emmc-image/oc200-alpine-3.24.3-beta1.img
-[đã xóa khỏi repo] <archive>/research/emmc-image/beta1-build-manifest.json
+not-retained/research/emmc-image/erofs-stage/p1-beta1.erofs
+not-retained/research/emmc-image/erofs-stage/p2-beta1.f2fs
+not-retained/research/emmc-image/oc200-alpine-3.24.3-beta1.img
+not-retained/research/emmc-image/beta1-build-manifest.json
 ```
 
 Keep the current image and recovery pair untouched until the Beta image passes
 all checks and its manifest/hash is copied elsewhere.
 
-`<archive>/oc200-rfc2217/OC200_credentials.txt` contains a plaintext lab credential. Do
+The local credentials file (not in git) contains a plaintext lab credential. Do
 not publish it or include it in a shared archive; protect personal workspace
 copies accordingly.

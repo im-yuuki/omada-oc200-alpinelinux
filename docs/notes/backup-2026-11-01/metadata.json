@@ -1,0 +1,23 @@
+{
+  "host": "192.168.12.26",
+  "dump_user_bytes": 3907452928,
+  "dump_user_sha256": "5f98143c8f95874499a22a2b474a6229b8b5ec33de0d93d1bdc54ef13a3d39ad",
+  "boot0_bytes": 2359296,
+  "boot0_sha256": "2dce229d0099e7e3cc65ee98b92893c8618bb92ccec498c09ade0da8ff28a9df",
+  "boot1_bytes": 2293760,
+  "boot1_sha256": "f9f69f2afaff3dbcd98b095f62d13b5cfcd9eb032d5c4dee39cab25912abc9ac",
+  "note": "dd returned EOF before the sysfs logical sizes: user is 3,200 sectors short; boot0 and boot1 are partial EOF-sized reads. Files preserve actual returned bytes. RPMB not accessed.",
+  "device_identity": {
+    "name": "4FTE4R",
+    "manfid": "0x000015",
+    "oemid": "0x0100",
+    "serial": "0xc013bc16",
+    "cid": "15010034465445345201c013bc16b600",
+    "csd": "d02701320f5903fff6dbffef8e404000"
+  },
+  "sysfs_sizes": {
+    "user": 3909091328,
+    "boot0": 4194304,
+    "boot1": 4194304
+  }
+}
