@@ -4,7 +4,7 @@ RAM recovery with a built-in web UI for uploading artifacts and flashing the
 eMMC user area from the board. Intended for maintenance after Beta-2: update
 kernel/DTB/p1/p2/MBR without a TFTP host or `mmc write` from U-Boot.
 
-Artifacts (copies in `out/`):
+Artifacts (copies in `<archive>/out/`):
 
 | Artifact | Bytes | SHA-256 |
 |---|---|---|
@@ -50,7 +50,7 @@ booti 0x05000000 0x20000000:${initrd_size} 0x04f00000
 Notes:
 
 - `rdinit=/init` is mandatory — the flash CGIs gate on it.
-- Stage the DTB from `research/emmc-image/erofs-stage/`.
+- Stage the DTB from `<archive>/research/emmc-image/erofs-stage/`.
 - Do not run `saveenv`, `mmc write`, or `sf write`.
 
 ## Usage

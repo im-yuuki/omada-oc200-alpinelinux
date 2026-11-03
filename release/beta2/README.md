@@ -1,12 +1,21 @@
 # OC200 Alpine Beta 2 artifacts
 
-This folder contains the Beta 2 eMMC image, individual partitions, kernel/DTB, RAM
-recovery files, and a patched bootloader image. Read both guides before
-testing:
+This folder holds the small Beta 2 release metadata: hashes, manifest, patched
+DTB, patched SPI-NOR image, and the kernel reproduction bundle. The large
+payloads (eMMC image, partitions, kernel Image, RAM recovery images) are **not**
+in git. They are published as release assets of this repository, compressed
+with zstd (`*.zst`). Decompress before use, e.g.:
 
-1. `GUIDE-RECOVERY.md` — TFTP RAM recovery, installation, component updates,
+```bash
+zstd -d oc200-alpine-3.24.3-full-emmc-image.img.zst
+```
+
+Then verify the decompressed file against `SHA256SUMS.txt`. Read both guides
+before testing:
+
+1. `docs/guides/GUIDE-RECOVERY.md` — TFTP RAM recovery, installation, component updates,
    and safety.
-2. `GUIDE-NORMAL-BOOT.md` — normal eMMC boot and acceptance checks.
+2. `docs/guides/GUIDE-NORMAL-BOOT.md` — normal eMMC boot and acceptance checks.
 
 Verify payloads against `SHA256SUMS.txt`. It intentionally omits Markdown and
 JSON files. The separate `kernel-repro/SHA256SUMS.txt` covers the source/config

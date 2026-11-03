@@ -1,6 +1,6 @@
 # OC200 SPI-NOR static analysis
 
-Analysis source: `research/backups/oc200-emmc-2026-11-01/oc200-spi-nor-1MiB.bin`.
+Analysis source: `<archive>/research/backups/oc200-emmc-2026-11-01/oc200-spi-nor-1MiB.bin`.
 Read-only static inspection only; no code was executed and no hardware was
 accessed during this analysis.
 

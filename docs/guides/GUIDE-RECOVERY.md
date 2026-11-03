@@ -5,7 +5,10 @@ eMMC, then flashes the Beta 2 image (or individual parts) to the eMMC **user
 area**. Use it to install Beta 2 the first time, to replace a broken
 kernel/rootfs, or to update parts.
 
-## Files used (this folder)
+## Files used (`release/beta2/`, payloads from the release assets)
+
+The large payloads are published as `.zst` release assets. Decompress them
+first (`zstd -d <file>.zst`) and check against `release/beta2/SHA256SUMS.txt`.
 
 | File | Purpose | SHA-256 |
 |---|---|---|
