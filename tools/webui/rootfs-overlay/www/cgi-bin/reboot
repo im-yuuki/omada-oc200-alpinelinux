@@ -1,0 +1,12 @@
+#!/bin/sh
+# POST /cgi-bin/reboot?t=<token> — sync and reboot the board.
+. ./common.sh
+
+fail() { printf 'Content-Type: application/json\r\n\r\n{"ok":0,"err":"%s"}\n' "$1"; exit 1; }
+
+check_token || exit 1
+
+printf 'Content-Type: application/json\r\n\r\n{"ok":1,"action":"rebooting"}\n'
+sync
+sleep 1
+reboot -f

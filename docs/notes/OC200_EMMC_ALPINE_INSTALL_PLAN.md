@@ -341,7 +341,7 @@ Build verification: `Image` and all DTBs compile; decompilation shows the
 USB xHCI/EHCI nodes are `okay` and the Cloud LED has the disk-activity trigger.
 The extracted EROFS passes `fsck.erofs`; p1 is 20,324,352 bytes, within its
 20 MiB partition. Image layout and hashes are in
-`<archive>/research/emmc-image/build-manifest.json`. After correcting root's expired
+`build/emmc-image/build-manifest.json`. After correcting root's expired
 password marker while preserving its password hash, the updated full image
 SHA-256 is `89948e7db964ef13ec84871e05be3c4e7f26ec7797cf7b762af7fb06e5592839`;
 the p1 payload SHA-256 is
@@ -354,12 +354,12 @@ erases its previous persistent overlay contents. The board was manually booted
 into known-good RAM/TFTP Alpine at `192.168.12.27`; preflight confirmed the
 expected CID, RAM OverlayFS root, and no eMMC partition mounts. Exactly
 3,907,452,928 bytes were written to `/dev/mmcblk0` and read back; that initial
-full-image hash is recorded in `<archive>/research/emmc-image/last-flash-readback.txt`.
+full-image hash is recorded in `build/emmc-image/last-flash-readback.txt`.
 Root's shadow entry was then found to require a password change, so the updated
 EROFS was written to `/dev/mmcblk0p1` only from RAM recovery. The current p1
 readback matches the new payload hash in
-`<archive>/research/emmc-image/last-p1-shadowfix-readback.txt`; the pre-update p1 backup
-is `<archive>/research/emmc-image/p1-before-shadowfix.backup`. The first eMMC boot then
+`build/emmc-image/last-p1-shadowfix-readback.txt`; the pre-update p1 backup
+is `[đã xóa] <archive>/research/emmc-image/p1-before-shadowfix.backup`. The first eMMC boot then
 panicked because the kernel build had an empty `CONFIG_INITRAMFS_SOURCE` and
 `CONFIG_EROFS_FS=m`, despite the runbook expecting an embedded initramfs. The
 config is corrected to embed `/build/erofs-initramfs.cpio` and build EROFS in.
@@ -368,7 +368,7 @@ is 41,318,912 bytes (80,701 sectors), ending at LBA 81,725, safely before p1
 at LBA 131,072. Only that kernel extent at LBA `0x400` was written; readback
 SHA-256 `045849beb994ded1911b5d356395d2f4e924eab91609b9f1a2bebf9a415cdef7`
 matches, and a p1 readback still matches its expected SHA-256. The original
-kernel window backup is `<archive>/research/emmc-image/kernel-window-before-embedded-initramfs.backup`.
+kernel window backup is `[đã xóa] <archive>/research/emmc-image/kernel-window-before-embedded-initramfs.backup`.
 SPI NOR, eMMC boot0/boot1, RPMB, DTB and p2 remain untouched. The board is back
 in RAM recovery; persistent boot and service/USB/LED behavior await another
 manual eMMC boot.
@@ -395,11 +395,11 @@ Changes prepared locally:
   TXFLOW/RXFLOW from phylink's negotiated directions. It does not force a
   pause policy or modify the QCA tagger/mvneta. Runtime A/B results did not
   show material improvement from disabling pause or TSO/GSO/GRO; see
-  `research/OC200_AR8236_IPERF_INVESTIGATION.md`.
+  `docs/notes/OC200_AR8236_IPERF_INVESTIGATION.md`.
 - A p2 F2FS image matching the existing partition boundary/capacity passed
   `fsck.f2fs` before flashing; the full image write installed it at p2.
 
-The final candidate is `<archive>/research/emmc-image/oc200-erofs-persist.img`, SHA-256
+The final candidate is `[đã xóa] <archive>/research/emmc-image/oc200-erofs-persist.img`, SHA-256
 `a958986e2e8d8cb50fe0a20d5e43c14a3bada2d987f2edb72943e08e23b8f5db`. It
 contains the 42,179,072-byte kernel, updated DSA DTB labels (`swp1`/`swp2`),
 EROFS p1, and F2FS p2. From RAM recovery, preflight confirmed the expected CID,

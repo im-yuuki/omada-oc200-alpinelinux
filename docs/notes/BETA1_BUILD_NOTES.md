@@ -6,7 +6,7 @@ Runbook: `docs/BETA_BUILD.md` (layout section updated to match).
 
 1. Rootfs rebased fresh instead of `apk fix` on `ssh-rootfs` (user request,担心 copy 不完整).
    - Source: retained `alpine-minirootfs-3.24.3-aarch64.tar.gz` (SHA-256 verified `4d3f80af…`).
-   - Tree: `<archive>/research/alpine/3.24.3/beta1-rootfs/` — `ssh-rootfs` untouched, used as migration reference.
+   - Tree: `[đã xóa] <archive>/research/alpine/3.24.3/beta1-rootfs/` — `ssh-rootfs` untouched, used as migration reference.
    - Native ARM64 OrbStack container; `apk add` the old world set (+ fixes below); `prepare-rootfs-persistent.sh` applied; config migrated file-by-file from `ssh-rootfs`.
 2. World delta vs old rootfs: `procps` → `procps-ng` (package renamed); added `ifupdown-ng` explicitly (needed by `networking` init + `use ipv6-ra`; old tree had it as a dep).
 3. chrony UID pinned to old layout 124:124 (chrony package auto-created 100:101; explicit sed + `chown -R 124:124 var/lib/chrony`).
@@ -20,10 +20,10 @@ Runbook: `docs/BETA_BUILD.md` (layout section updated to match).
 
 ## Subagent reproducibility audit (read-only) — ses_e694cb1d6ffet02YGBIFbTcrGj
 
-Bottom line: enough source to reproduce the fixed kernel+DTB (pristine `linux-6.18.59.tar.xz` + modified in-tree files + configs + documented build flow in `<archive>/research/kernel/BUILD_CONFIG.md`), with gaps:
+Bottom line: enough source to reproduce the fixed kernel+DTB (pristine `linux-6.18.59.tar.xz` + modified in-tree files + configs + documented build flow in `build/kernel/BUILD_CONFIG.md`), with gaps:
 
 - No git history in `<archive>/research/kernel/linux-6.18.59/`; four deltas exist only live in-tree and are NOT exported as patches:
-  1. `drivers/net/dsa/qca/ar8236.c` + `ar8236.h` (final flow-control/phylink version — `research/ar8236-port/ar8236-modern.c` is a STALE draft missing exactly the flow-control change),
+  1. `drivers/net/dsa/qca/ar8236.c` + `ar8236.h` (final flow-control/phylink version — `research/ar8236/ar8236-modern.c` is a STALE draft missing exactly the flow-control change),
   2. `drivers/mmc/core/block.c` (Cloud LED `ledtrig_disk_activity` — undocumented as diff),
   3. `qca/Kconfig`, `qca/Makefile`, `marvell/Makefile` wiring.
 - macOS case-collision damage in tree: ~12 netfilter files collapsed (xt_DSCP/dscp, xt_HL, xt_MARK.h, ipt_ECN.h, ipt_TTL.h, xt_TCPMSS.h, xt_RATEEST.h, xt_CONNMARK.h …) — module rebuilds from the tree can misbuild; pristine tarball is the recovery baseline.
@@ -49,8 +49,8 @@ artifact lên board xử lí phần flash để tiện maintain").
 
 | Artifact | Bytes | SHA-256 |
 |---|---|---|
-| <archive>/out/oc200-squashfs-initramfs-webui.uImage | 11,632,578 | edef3bcc20a2d59bcaad530ca49ed8149034322e3c5ef95866292763a3534e61 |
-| <archive>/out/oc200-alpine-3.24.3-ssh-webui.squashfs | 10,788,864 | 4398d3235853994020067cf170fa1ac9266e11c4d7e4b151a7c02dc2ce56a826 |
+| [đã xóa] out/oc200-squashfs-initramfs-webui.uImage | 11,632,578 | edef3bcc20a2d59bcaad530ca49ed8149034322e3c5ef95866292763a3534e61 |
+| [đã xóa] out/oc200-alpine-3.24.3-ssh-webui.squashfs | 10,788,864 | 4398d3235853994020067cf170fa1ac9266e11c4d7e4b151a7c02dc2ce56a826 |
 
 Source trees: `squashfs-initramfs/` (wrapper, unchanged) + `ram-tree-extracted/`
 (squashfs content) with additions:
@@ -89,7 +89,7 @@ reference. Source: `<archive>/research/kernel/linux-6.18.59/arch/arm64/boot/dts/
 
 | Artifact | Bytes | SHA-256 |
 |---|---|---|
-| <archive>/out/oc200-6.18.59-swp-ports.dtb (v2) | 12,345 | 9b9955f746ffe2fba8d8f698876af4cedbed0adf1a6f08dd54819d549aeeb42b |
+| [đã xóa] out/oc200-6.18.59-swp-ports.dtb (v2) | 12,345 | 9b9955f746ffe2fba8d8f698876af4cedbed0adf1a6f08dd54819d549aeeb42b |
 
 **Verified on board:** after flashing DTB v2 to LBA 896, `/sys/class/leds/system-led`
 appears, `/sys/kernel/debug/devices_deferred` is empty, LED blinks on disk I/O
@@ -190,7 +190,7 @@ embedded UI.
 
 Beta 2 supersedes the distributed Beta 1 payloads. The existing filenames are
 kept stable for tester procedures; the release identity is Beta 2 in
-`<archive>/out/build-manifest.json` and the guides. Beta 2 includes the Docker-capable
+`release/beta2/build-manifest.json` and the guides. Beta 2 includes the Docker-capable
 built-in netfilter/NAT/veth kernel and GPIO-key support. Beta 1 remains the
 historical release record and is not overwritten by the Beta 2 label.
 

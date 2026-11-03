@@ -1,0 +1,35 @@
+#!/bin/sh
+# GET/POST /cgi-bin/verify?t=<token>&part=<mbr|dtb|kernel|p1|p2|raw>&lba=<n for raw>
+#   &start=<byte offset>&len=<bytes>&sha=<expected hex256 (optional)>
+# Reads back exactly `len` bytes at `start` from the eMMC user area and
+# returns the SHA-256; compares when `sha` is provided. Read-only.
+. ./common.sh
+
+fail() { printf 'Content-Type: application/json\r\n\r\n{"ok":0,"err":"%s"}\n' "$1"; exit 1; }
+
+check_token || exit 1
+check_device || exit 1
+
+PART=$(get_param part); LBA=$(get_param lba)
+START=$(get_param start); LEN=$(get_param len); SHA=$(get_param sha)
+
+case "$START$LEN" in ''|*[!0-9]*) fail "bad numeric params" ;; esac
+
+region_bounds "$PART" "$LBA" || exit 1
+[ "$START" -ge "$R_START" ] || fail "start before region"
+[ "$((START + LEN))" -le "$((R_START + R_MAX))" ] || fail "exceeds region end"
+
+if [ "$((LEN % 512))" = "0" ]; then
+	GOT=$(dd if=$DEVICE bs=512 skip=$((START/512)) count=$((LEN/512)) 2>/dev/null \
+		| sha256sum | awk '{print $1}')
+else
+	GOT=$(dd if=$DEVICE bs=1 skip=$START count=$LEN 2>/dev/null \
+		| sha256sum | awk '{print $1}')
+fi
+
+if [ -n "$SHA" ]; then
+	if [ "$GOT" = "$SHA" ]; then MATCH=1; else MATCH=0; fi
+	printf 'Content-Type: application/json\r\n\r\n{"ok":1,"sha":"%s","match":%s}\n' "$GOT" "$MATCH"
+else
+	printf 'Content-Type: application/json\r\n\r\n{"ok":1,"sha":"%s"}\n' "$GOT"
+fi

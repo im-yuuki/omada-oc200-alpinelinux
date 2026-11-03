@@ -108,6 +108,6 @@ Do not call `saveenv` until NOR has been backed up and boot has been tested; `sa
 At the time of this 2026-10-31 capture, the board remained at `Marvell>>`. No
 flash or eMMC write was performed during that dump. A later SPI-NOR
 default-environment intervention was performed on 2026-11-01; see
-`research/OC200_BOOTLOADER_INTERVENTION_2026-11-01.md` for the changed state and
+`docs/notes/OC200_BOOTLOADER_INTERVENTION_2026-11-01.md` for the changed state and
 verification. The RFC2217 monitor note above is historical, not a statement of
 the board's current connection state.

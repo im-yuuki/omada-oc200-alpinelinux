@@ -159,7 +159,7 @@ It uses the modern DSA etype-header helpers. The old vendor implementation is
 preserved for comparison in:
 
 ```text
-research/ar8236-port/tag_qca-4.4.c
+research/ar8236/tag_qca-4.4.c
 ```
 
 The tagger remains a secondary hypothesis. It should not be changed before

@@ -1,7 +1,7 @@
 #!/bin/sh
 # CGI test harness (container-only).
 set -u
-RT=/work/research/alpine/3.24.3/ram-tree-extracted/www/cgi-bin
+RT="$(cd "$(dirname "$0")/../rootfs-overlay/www/cgi-bin" && pwd)"
 T=/tmp/t
 rm -rf $T; mkdir -p $T
 dd if=/dev/zero of=$T/dev bs=1M count=64 status=none

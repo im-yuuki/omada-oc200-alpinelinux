@@ -11,9 +11,9 @@ are not padded whole-device images. See that directory's README and metadata
 before using them. RPMB was not accessed. Current build, recovery, and flash
 boundaries are in `BETA_BUILD.md`.
 
-- `<archive>/research/backups/oc200-nor-1MiB.bin`: 0 bytes
-- `<archive>/research/backups/oc200-nor-udp.bin`: 0 bytes
-- `<archive>/research/backups/nc-test.bin`: 0 bytes
+- `[không có trong workspace] <archive>/research/backups/oc200-nor-1MiB.bin`: 0 bytes
+- `[không có trong workspace] <archive>/research/backups/oc200-nor-udp.bin`: 0 bytes
+- `[không có trong workspace] <archive>/research/backups/nc-test.bin`: 0 bytes
 
 The earlier transfer attempts used TCP/UDP through the NAT path and were not reliable. The board did calculate a NOR device hash during one diagnostic session:
 
@@ -33,7 +33,7 @@ SPI NOR: gd25lq80, 1 MiB
 eMMC: Samsung 4FTE4R, 3.6 GiB
 ```
 
-The read-only eMMC DOS partition map was captured in `<archive>/research/uboot-part-list.txt` and matches the later Linux `fdisk` output:
+The read-only eMMC DOS partition map was captured in `research/device-logs/uboot-part-list.txt` and matches the later Linux `fdisk` output:
 
 ```text
 p1: start 66560,  size 1047552 sectors

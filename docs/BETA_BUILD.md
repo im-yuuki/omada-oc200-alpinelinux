@@ -57,28 +57,28 @@ keep an untouched copy before experimenting.
 
 | Beta input | Path | Bytes | SHA-256 |
 |---|---|---:|---|
-| Persistent kernel with F2FS security-xattr fix | `<archive>/research/emmc-image/erofs-stage/oc200-6.18.59-persist-f2fs-ar8236-f2fs-security-Image` | 42,179,072 | `d1d0cc1aca3c4b48958493c2c6e10a09f08920038b1da7ec8e8adc2c579ba3c6` |
-| Current OC200 DTB (`swp1`/`swp2`, USB, Cloud LED) | `<archive>/research/emmc-image/erofs-stage/oc200-6.18.59-swp-ports.dtb` | 12,381 | `fc723d1f04d0b76c1803f32fbf200f7e9a787323a61fb4ad02de1026a235ddca` |
-| Prepared Alpine rootfs | `<archive>/research/alpine/3.24.3/ssh-rootfs/` | — | mutable build input |
-| Kernel source/config | `<archive>/research/kernel/linux-6.18.59/`, `<archive>/research/kernel/oc200-alpine-full.config` | — | source includes OC200 patches |
-| Resolved build config snapshot | `<archive>/research/kernel/oc200-6.18.59-resolved.config` | — | exact config used for the staged security kernel |
+| Persistent kernel with F2FS security-xattr fix | `[đã xóa] <archive>/research/emmc-image/erofs-stage/oc200-6.18.59-persist-f2fs-ar8236-f2fs-security-Image` | 42,179,072 | `d1d0cc1aca3c4b48958493c2c6e10a09f08920038b1da7ec8e8adc2c579ba3c6` |
+| Current OC200 DTB (`swp1`/`swp2`, USB, Cloud LED) | `[đã xóa] <archive>/research/emmc-image/erofs-stage/oc200-6.18.59-swp-ports.dtb` | 12,381 | `fc723d1f04d0b76c1803f32fbf200f7e9a787323a61fb4ad02de1026a235ddca` |
+| Prepared Alpine rootfs | `[đã xóa] <archive>/research/alpine/3.24.3/ssh-rootfs/` | — | mutable build input |
+| Kernel source/config | `<archive>/research/kernel/linux-6.18.59/`, `build/kernel/oc200-alpine-full.config` | — | source includes OC200 patches |
+| Resolved build config snapshot | `build/kernel/oc200-6.18.59-resolved.config` | — | exact config used for the staged security kernel |
 
 Do not rebuild or substitute the fixed kernel/DTB for Beta 1. The retained full
-image `<archive>/research/emmc-image/oc200-erofs-persist.img` is 3,907,452,928 bytes,
+image `[đã xóa] <archive>/research/emmc-image/oc200-erofs-persist.img` is 3,907,452,928 bytes,
 SHA-256 `a958986e2e8d8cb50fe0a20d5e43c14a3bada2d987f2edb72943e08e23b8f5db`.
-Its manifest `<archive>/research/emmc-image/build-manifest.json` identifies the earlier
+Its manifest `build/emmc-image/build-manifest.json` identifies the earlier
 kernel (`13eb0d3f76aa8d80634db20a69b1d159942265ce0a98ea6101e44e12d6815554`)
 and old p2 start `0x2A000`; it is a rollback/reference image, **not Beta 1**.
-`<archive>/research/emmc-image/last-flash-readback.txt` records a matching image-prefix
+`build/emmc-image/last-flash-readback.txt` records a matching image-prefix
 hash.
 
 Keep the RAM recovery pair and image:
 
 | Artifact | Path | Bytes | SHA-256 |
 |---|---|---:|---|
-| Recovery kernel | `<archive>/research/kernel/oc200-6.18.59-alpine-full-usb-Image` | 40,327,680 | `97ce21c126ec6e4a312674238ff27f7b8bc0154d5e4886f69266f24740eda62e` |
-| SquashFS initramfs (embeds the rootfs) | `<archive>/research/alpine/3.24.3/oc200-squashfs-initramfs.uImage` | 11,732,990 | `4e78cc46a733a6d721749c022646c114694666b9e88634074b1f5a71b6d04424` |
-| Standalone SquashFS | `<archive>/research/alpine/3.24.3/oc200-alpine-3.24.3-ssh.squashfs` | 10,915,840 | `92057995d63c8265a0085a1c5c11045a9fa25dedf414c69de115786a599f7960` |
+| Recovery kernel | `[đã xóa] <archive>/research/kernel/oc200-6.18.59-alpine-full-usb-Image` | 40,327,680 | `97ce21c126ec6e4a312674238ff27f7b8bc0154d5e4886f69266f24740eda62e` |
+| SquashFS initramfs (embeds the rootfs) | `[đã xóa] <archive>/research/alpine/3.24.3/oc200-squashfs-initramfs.uImage` | 11,732,990 | `4e78cc46a733a6d721749c022646c114694666b9e88634074b1f5a71b6d04424` |
+| Standalone SquashFS | `[đã xóa] <archive>/research/alpine/3.24.3/oc200-alpine-3.24.3-ssh.squashfs` | 10,915,840 | `92057995d63c8265a0085a1c5c11045a9fa25dedf414c69de115786a599f7960` |
 
 The DTB in the fixed-input table is also the current recovery DTB. Preserve
 original captures under `<archive>/research/backups/oc200-emmc-2026-11-01/`; they are
@@ -94,7 +94,7 @@ accessed. Check `metadata.json` and the backup README before using a dump.
 
 The kernel source/config and the minimal persistent initramfs sources remain
 in the workspace. The fixed kernel was built with the small embedded BusyBox
-`/init` at `<archive>/research/alpine/3.24.3/erofs-initramfs/init`; it mounts EROFS plus
+`/init` at `[đã xóa] <archive>/research/alpine/3.24.3/erofs-initramfs/init`; it mounts EROFS plus
 F2FS OverlayFS, then switches to the prepared Alpine root and standard OpenRC.
 This Beta locks the existing kernel artifact; the fixed kernel has not yet
 passed the persistent copy-up test on the board. Do not replace its initramfs
@@ -123,7 +123,7 @@ Start the native build container:
 ```sh
 docker run --rm -it --platform linux/arm64 \
   --mount "type=bind,src=$PWD,dst=/work" \
-  --mount "type=bind,src=<archive>/research/alpine/3.24.3/ssh-rootfs,dst=/rootfs" \
+  --mount "type=bind,src=[đã xóa] <archive>/research/alpine/3.24.3/ssh-rootfs,dst=/rootfs" \
   -w /work alpine:3.24.3 sh
 ```
 
@@ -146,7 +146,7 @@ repair and EROFS creation. Do not bypass APK scripts or triggers.
 `ssh-rootfs` is already the prepared persistent base; do not re-extract the
 minirootfs over it. For Beta 1 it was kept untouched as the config-migration
 reference and the tree was instead rebuilt fresh as
-`<archive>/research/alpine/3.24.3/beta1-rootfs/` (native ARM64 container, all packages
+`[đã xóa] <archive>/research/alpine/3.24.3/beta1-rootfs/` (native ARM64 container, all packages
 reinstalled, configs migrated from `ssh-rootfs`, chrony UID pinned at 124).
 The p1 build above uses `beta1-rootfs`. If rerunning any of this, still use
 the target root's repositories and signing keys:
@@ -189,7 +189,7 @@ payloads, BusyBox applets, trigger errors, or unexplained mode mismatches. Do
 not install persistent `iperf3`.
 
 The persistent setup script
-`<archive>/research/alpine/3.24.3/erofs-initramfs/prepare-rootfs-persistent.sh` documents
+`[đã xóa] <archive>/research/alpine/3.24.3/erofs-initramfs/prepare-rootfs-persistent.sh` documents
 base configuration. The current rootfs is already prepared; rerun that script
 only when deliberately bootstrapping a fresh rootfs, then recheck root
 password, interfaces, OpenRC links, SSH, chrony, zram, UTC, and package modes.
@@ -200,25 +200,25 @@ Inside the container, from `/work`:
 
 ```sh
 cd /work
-test ! -e <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
-test ! -e <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+test ! -e [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
+test ! -e [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
 mkfs.erofs -z lz4hc,12 -L rootfs --all-root --preserve-mtime \
-  <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs \
-  <archive>/research/alpine/3.24.3/beta1-rootfs
+  [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs \
+  [đã xóa] <archive>/research/alpine/3.24.3/beta1-rootfs
 
 P2_START=262144       # 0x40000
 IMAGE_SECTORS=7631744
 P2_SECTORS=$((IMAGE_SECTORS - P2_START))
 P2_BYTES=$((P2_SECTORS * 512))
-truncate -s "$P2_BYTES" <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
-mkfs.f2fs -f -l userdata <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
-fsck.f2fs -f <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+truncate -s "$P2_BYTES" [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+mkfs.f2fs -f -l userdata [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+fsck.f2fs -f [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
 
-fsck.erofs <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
-blkid -p <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
-blkid -p <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
-stat -c '%s %n' <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs \
-  <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+fsck.erofs [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
+blkid -p [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
+blkid -p [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+stat -c '%s %n' [đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs \
+  [đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
 ```
 
 Labels must read `rootfs` and `userdata`; p1 must be at most 67,108,864 bytes
@@ -227,17 +227,17 @@ check or label verification fails.
 
 ## Assemble Beta 1
 
-`<archive>/research/emmc-image/build-image.py` is the offline Beta assembler. It writes a
-new `<archive>/research/emmc-image/oc200-alpine-3.24.3-beta1.img` and
-`<archive>/research/emmc-image/beta1-build-manifest.json`; it must not replace the
+`build/emmc-image/build-image.py` is the offline Beta assembler. It writes a
+new `[đã xóa] <archive>/research/emmc-image/oc200-alpine-3.24.3-beta1.img` and
+`[đã xóa khỏi repo] <archive>/research/emmc-image/beta1-build-manifest.json`; it must not replace the
 rollback image. It checks the fixed kernel/DTB hashes, payload bounds, MBR
 layout, image size, and records component hashes.
 
 ```sh
 cd /work
-python3 <archive>/research/emmc-image/build-image.py
-python3 -m json.tool <archive>/research/emmc-image/beta1-build-manifest.json
-sha256sum <archive>/research/emmc-image/oc200-alpine-3.24.3-beta1.img
+python3 build/emmc-image/build-image.py
+python3 -m json.tool [đã xóa khỏi repo] <archive>/research/emmc-image/beta1-build-manifest.json
+sha256sum [đã xóa] <archive>/research/emmc-image/oc200-alpine-3.24.3-beta1.img
 ```
 
 Verify before any board operation:
@@ -369,10 +369,9 @@ recovery and the eMMC **user-area** device. Before any write confirm:
 
 Do not write SPI-NOR, eMMC `boot0`/`boot1`, or RPMB. Never run `saveenv`. Do
 not reuse this workspace's hard-coded CID for another tester. The existing
-`<archive>/research/emmc-image/flash/flash-persist.sh` defaults to the **old rollback
-image**, is gated for the recorded board, and is not wired for Beta 1. Never
-invoke it without an explicit image argument; review/adapt all CID/size gates
-for each test board before use. Read back the full logical user area and verify
+`build/emmc-image/flash/flash-persist.sh` has no default image; it requires the
+image path as its first argument. It is gated for the recorded board and is not
+wired for Beta 1. Review/adapt all CID/size gates for each test board before use. Read back the full logical user area and verify
 the image-length prefix hash before rebooting.
 
 ## Known state and release record
@@ -410,10 +409,10 @@ the image-length prefix hash before rebooting.
 Expected Beta build outputs:
 
 ```text
-<archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
-<archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
-<archive>/research/emmc-image/oc200-alpine-3.24.3-beta1.img
-<archive>/research/emmc-image/beta1-build-manifest.json
+[đã xóa] <archive>/research/emmc-image/erofs-stage/p1-beta1.erofs
+[đã xóa] <archive>/research/emmc-image/erofs-stage/p2-beta1.f2fs
+[đã xóa] <archive>/research/emmc-image/oc200-alpine-3.24.3-beta1.img
+[đã xóa khỏi repo] <archive>/research/emmc-image/beta1-build-manifest.json
 ```
 
 Keep the current image and recovery pair untouched until the Beta image passes

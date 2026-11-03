@@ -187,7 +187,7 @@ Runtime counters show no mvneta CRC, collision, overrun or MAC errors. The
 current priority hypothesis is a pause/flow-control mismatch between the
 AR8236 user port and the fixed 100 Mbps CPU port, followed by possible QCA
 DSA-tag/offload interaction. Detailed evidence and A/B tests are documented
-in `research/OC200_AR8236_IPERF_INVESTIGATION.md`.
+in `docs/notes/OC200_AR8236_IPERF_INVESTIGATION.md`.
 
 ## eMMC read-only dump
 
