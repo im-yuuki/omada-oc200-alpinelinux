@@ -3,7 +3,8 @@
 Run Alpine Linux on the TP-Link Omada OC200 as a small ARM64 Linux system.
 This is an independent firmware port for the **Marvell Armada 3720 / Atheros
 AR8236** board, not an Omada Controller upgrade or an official TP-Link
-firmware. Other hardware revisions are not verified.
+firmware. The tested unit reports **Product Version 1.0**; other revisions
+are not verified.
 
 - **Persistent Alpine:** a read-only EROFS base and writable F2FS overlay on
   eMMC. Configuration and packages installed with `apk` survive reboot.
@@ -14,11 +15,11 @@ firmware. Other hardware revisions are not verified.
 
 ## Download or build
 
-**Use the Beta 2 reference build:** Get the eMMC image and recovery files from
-[Releases](https://github.com/im-yuuki/omada-oc200-alpinelinux/releases). The
-[Beta 2 release notes](release/beta2/README.md) identify the files and their
-checksums. Follow the release-specific DTB instructions: the Beta 2 full image
-contains an older DTB than the separately published one.
+**Use the [Beta 2 reference release](https://github.com/im-yuuki/omada-oc200-alpinelinux/releases/tag/beta2-data):**
+Download the eMMC image and separate RAM recovery files for Alpine 3.24.3 /
+Linux 6.18.59. Verify the decompressed image against the
+[Beta 2 manifest](release/beta2/build-manifest.json). The image matching that
+manifest already contains `oc200-patched.dtb`; no separate DTB write is needed.
 
 **Build from current source:** Open **Actions → Build OC200 firmware → Run
 workflow**. The job selects the latest stable Linux and Alpine releases at run
@@ -39,11 +40,16 @@ you can boot RAM recovery over serial and TFTP before writing anything.
 
 Start with the [recovery and installation guide](docs/guides/GUIDE-RECOVERY.md),
 then use the [normal boot guide](docs/guides/GUIDE-NORMAL-BOOT.md) for the
-eMMC boot sequence. These guides describe Beta 2; for CI images, use the
-matching build manifest and CI first-login instructions. Stock U-Boot may
-need the documented manual boot settings. The separate SPI-NOR image is not
-part of normal installation. Do not write SPI-NOR, eMMC boot partitions or
-RPMB as part of installing Alpine.
+eMMC boot sequence. Use a level shifter for the board's measured 2.5 V UART.
+The guides describe Beta 2, including some instructions for older payloads:
+use the manifest for exact component sizes and enter the expected checksum
+manually in the recovery Web UI. Keep the Beta 2 recovery environment on a
+trusted network because it uses a default SSH password.
+
+For CI images, use the matching manifest and CI first-login instructions.
+Stock U-Boot may need the documented manual boot settings. The separate
+SPI-NOR image is not part of normal installation. Do not write SPI-NOR,
+eMMC boot partitions or RPMB as part of installing Alpine.
 
 ## Development status
 
