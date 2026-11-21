@@ -4,6 +4,7 @@
 #include <linux/bitfield.h>
 #include <linux/delay.h>
 #include <linux/etherdevice.h>
+#include <linux/ethtool.h>
 #include <linux/mdio.h>
 #include <linux/module.h>
 #include <linux/of_mdio.h>
@@ -15,7 +16,7 @@
 
 #define AR8236_MIB_DESC(_s, _o, _n) { .size = (_s), .offset = (_o), .name = (_n) }
 
-static const struct ar8236_mib_desc ar8236_mibs[39] = {
+static const struct ar8236_mib_desc ar8236_mibs[] = {
 	AR8236_MIB_DESC(1, AR8236_STATS_RXBROAD, "RxBroad"),
 	AR8236_MIB_DESC(1, AR8236_STATS_RXPAUSE, "RxPause"),
 	AR8236_MIB_DESC(1, AR8236_STATS_RXMULTI, "RxMulti"),
@@ -57,34 +58,124 @@ static const struct ar8236_mib_desc ar8236_mibs[39] = {
 	AR8236_MIB_DESC(1, AR8236_STATS_TXLATECOL, "TxLateCol"),
 };
 
-static int ar8236_reg_read(struct ar8236_priv *priv, u32 reg_addr)
+static int ar8236_select_page(struct mii_bus *bus, u32 word)
 {
-	int word = (reg_addr & ~3) >> 1;
+	int ret;
+
+	ret = __mdiobus_write(bus, 0x18, 0, (word >> 8) & 0x1ff);
+	if (!ret)
+		udelay(5);
+	return ret;
+}
+
+/* The MDIO bus lock must cover page selection and all data transfers. */
+static int ar8236_read32(struct mii_bus *bus, u32 word, u32 *val)
+{
+	int phy = 0x10 | ((word >> 5) & 7);
+	int reg = word & 0x1f;
 	int lo, hi;
 
-	if (mdiobus_write_nested(priv->bus, 0x18, 0, (word >> 8) & 0x1ff))
-		return -EIO;
-	lo = mdiobus_read_nested(priv->bus, 0x10 | ((word >> 5) & 7), word & 0x1f);
+	/* For clear-on-read MIB counters, read the low half first. */
+	lo = __mdiobus_read(bus, phy, reg);
 	if (lo < 0)
 		return lo;
-	hi = mdiobus_read_nested(priv->bus, 0x10 | (((word + 1) >> 5) & 7), (word + 1) & 0x1f);
+	hi = __mdiobus_read(bus, phy, reg + 1);
 	if (hi < 0)
 		return hi;
-	return (hi << 16) | lo;
+	*val = (u32)hi << 16 | lo;
+	return 0;
+}
+
+static int ar8236_reg_read(struct ar8236_priv *priv, u32 reg_addr, u32 *val)
+{
+	struct mii_bus *bus = priv->bus;
+	u32 word = (reg_addr & ~3) >> 1;
+	int ret;
+
+	mutex_lock_nested(&bus->mdio_lock, MDIO_MUTEX_NESTED);
+	ret = ar8236_select_page(bus, word);
+	if (!ret)
+		ret = ar8236_read32(bus, word, val);
+	mutex_unlock(&bus->mdio_lock);
+	return ret;
 }
 
 static int ar8236_reg_write(struct ar8236_priv *priv, u32 reg_addr, u32 value)
 {
-	int word = (reg_addr & ~3) >> 1;
+	struct mii_bus *bus = priv->bus;
+	u32 word = (reg_addr & ~3) >> 1;
+	int phy = 0x10 | ((word >> 5) & 7);
+	int reg = word & 0x1f;
 	int ret;
 
-	ret = mdiobus_write_nested(priv->bus, 0x18, 0, (word >> 8) & 0x1ff);
-	if (ret)
-		return ret;
-	ret = mdiobus_write_nested(priv->bus, 0x10 | (((word + 1) >> 5) & 7), (word + 1) & 0x1f, value >> 16);
-	if (ret)
-		return ret;
-	return mdiobus_write_nested(priv->bus, 0x10 | ((word >> 5) & 7), word & 0x1f, value & 0xffff);
+	mutex_lock_nested(&bus->mdio_lock, MDIO_MUTEX_NESTED);
+	ret = ar8236_select_page(bus, word);
+	if (!ret)
+		ret = __mdiobus_write(bus, phy, reg + 1, value >> 16);
+	if (!ret)
+		ret = __mdiobus_write(bus, phy, reg, value & 0xffff);
+	mutex_unlock(&bus->mdio_lock);
+	return ret;
+}
+
+static int ar8236_get_sset_count(struct dsa_switch *ds, int port, int sset)
+{
+	return sset == ETH_SS_STATS ? ARRAY_SIZE(ar8236_mibs) : 0;
+}
+
+static void ar8236_get_strings(struct dsa_switch *ds, int port, u32 sset,
+			       u8 *data)
+{
+	int i;
+
+	if (sset != ETH_SS_STATS)
+		return;
+
+	for (i = 0; i < ARRAY_SIZE(ar8236_mibs); i++)
+		ethtool_puts(&data, ar8236_mibs[i].name);
+}
+
+static void ar8236_get_ethtool_stats(struct dsa_switch *ds, int port, u64 *data)
+{
+	struct ar8236_priv *priv = ds->priv;
+	struct mii_bus *bus = priv->bus;
+	u32 base = AR8236_REG_PORT_MIB(port);
+	u64 *totals = priv->mib_stats + port * ARRAY_SIZE(ar8236_mibs);
+	int i, ret, err;
+
+	/* The entire per-port block is on one page. Keep the same lock while
+	 * accumulating clear-on-read counters, so readers see monotonic totals.
+	 */
+	mutex_lock_nested(&bus->mdio_lock, MDIO_MUTEX_NESTED);
+	err = ar8236_select_page(bus, base >> 1);
+	if (err)
+		goto out;
+
+	for (i = 0; i < ARRAY_SIZE(ar8236_mibs); i++) {
+		const struct ar8236_mib_desc *mib = &ar8236_mibs[i];
+		u32 word = (base + mib->offset) >> 1;
+		u32 lo, hi = 0;
+
+		ret = ar8236_read32(bus, word, &lo);
+		if (!ret && mib->size == 2)
+			ret = ar8236_read32(bus, word + 2, &hi);
+		if (ret) {
+			if (!err)
+				err = ret;
+			continue;
+		}
+		totals[i] += (u64)hi << 32 | lo;
+	}
+
+out:
+	memcpy(data, totals, sizeof(*totals) * ARRAY_SIZE(ar8236_mibs));
+	mutex_unlock(&bus->mdio_lock);
+	/* The ethtool callback cannot return an error; retain cached values
+	 * for unread counters and report the failed sample.
+	 */
+	if (err)
+		dev_warn_ratelimited(priv->dev, "port %d MIB read failed: %d\n",
+				     port, err);
 }
 
 static int ar8236_phy_read_raw(struct ar8236_priv *priv, int phy, int regnum)
@@ -141,10 +232,9 @@ static void ar8236_phylink_mac_link_down(struct phylink_config *config,
 {
 	struct dsa_port *dp = dsa_phylink_to_port(config);
 	struct ar8236_priv *priv = dp->ds->priv;
-	int val;
+	u32 val;
 
-	val = ar8236_reg_read(priv, AR8236_REG_PORT_STATUS(dp->index));
-	if (val >= 0)
+	if (!ar8236_reg_read(priv, AR8236_REG_PORT_STATUS(dp->index), &val))
 		ar8236_reg_write(priv, AR8236_REG_PORT_STATUS(dp->index),
 				 val & ~(AR8236_PORT_STATUS_LINK_UP |
 					  AR8236_PORT_STATUS_TXMAC |
@@ -160,10 +250,9 @@ static void ar8236_phylink_mac_link_up(struct phylink_config *config,
 {
 	struct dsa_port *dp = dsa_phylink_to_port(config);
 	struct ar8236_priv *priv = dp->ds->priv;
-	int val;
+	u32 val;
 
-	val = ar8236_reg_read(priv, AR8236_REG_PORT_STATUS(dp->index));
-	if (val < 0)
+	if (ar8236_reg_read(priv, AR8236_REG_PORT_STATUS(dp->index), &val))
 		return;
 
 	val |= AR8236_PORT_STATUS_LINK_UP |
@@ -200,17 +289,18 @@ static const struct phylink_mac_ops ar8236_phylink_mac_ops = {
 static int ar8236_port_enable(struct dsa_switch *ds, int port, struct phy_device *phy)
 {
 	struct ar8236_priv *priv = ds->priv;
-	int val, phy_id, bmcr;
+	int ret, phy_id, bmcr;
+	u32 val;
 
 	if (port < 0 || port >= AR8236_PORTS)
 		return -EINVAL;
-	val = ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(port));
-	if (val < 0)
-		return val;
+	ret = ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(port), &val);
+	if (ret)
+		return ret;
 	val |= 4 << AR8236_PORT_CTRL_STATE_S;
-	val = ar8236_reg_write(priv, AR8236_REG_PORT_CTRL(port), val);
-	if (val || dsa_is_cpu_port(ds, port))
-		return val;
+	ret = ar8236_reg_write(priv, AR8236_REG_PORT_CTRL(port), val);
+	if (ret || dsa_is_cpu_port(ds, port))
+		return ret;
 
 	phy_id = port - AR8236_CPU_PORT - 1;
 	bmcr = mdiobus_read_nested(priv->bus, priv->sw_addr + phy_id, MII_BMCR);
@@ -221,21 +311,20 @@ static int ar8236_port_enable(struct dsa_switch *ds, int port, struct phy_device
 	ar8236_phy_write_raw(priv, phy_id, MII_ADVERTISE,
 			      ADVERTISE_ALL | ADVERTISE_PAUSE_CAP |
 			      ADVERTISE_PAUSE_ASYM);
-	val = ar8236_phy_write_raw(priv, phy_id, MII_BMCR, bmcr);
-	if (val)
-		return val;
+	ret = ar8236_phy_write_raw(priv, phy_id, MII_BMCR, bmcr);
+	if (ret)
+		return ret;
 	return ar8236_phy_poll_reset(ds, phy_id);
 }
 
 static void ar8236_port_disable(struct dsa_switch *ds, int port)
 {
 	struct ar8236_priv *priv = ds->priv;
-	int val;
+	u32 val;
 
 	if (port < 0 || port >= AR8236_PORTS)
 		return;
-	val = ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(port));
-	if (val >= 0)
+	if (!ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(port), &val))
 		ar8236_reg_write(priv, AR8236_REG_PORT_CTRL(port), val & ~AR8236_PORT_CTRL_STATE);
 }
 
@@ -243,14 +332,17 @@ static int ar8236_setup(struct dsa_switch *ds)
 {
 	struct ar8236_priv *priv = ds->priv;
 	unsigned int user_mask = dsa_user_ports(ds);
-	int val, i;
+	int ret, i;
+	u32 val;
 
 	dev_info(priv->dev, "Setup driver for AR8236\n");
-	ar8236_reg_write(priv, AR8236_REG_CTRL, AR8236_CTRL_RESET);
+	ret = ar8236_reg_write(priv, AR8236_REG_CTRL, AR8236_CTRL_RESET);
+	if (ret)
+		return ret;
 	for (i = 0; i < 100; i++) {
 		udelay(10);
-		val = ar8236_reg_read(priv, AR8236_REG_CTRL);
-		if (val >= 0 && !(val & AR8236_CTRL_RESET))
+		ret = ar8236_reg_read(priv, AR8236_REG_CTRL, &val);
+		if (!ret && !(val & AR8236_CTRL_RESET))
 			break;
 	}
 	if (i == 100)
@@ -266,9 +358,15 @@ static int ar8236_setup(struct dsa_switch *ds)
 	}
 	ar8236_reg_write(priv, 0x2c, 0x7e3f003f);
 	ar8236_reg_write(priv, 0x4, 0x500);
-	val = ar8236_reg_read(priv, AR8236_REG_MIB_FUNC);
-	ar8236_reg_write(priv, AR8236_REG_MIB_FUNC, val | AR8236_MIB_EN);
-	val = ar8236_reg_read(priv, AR8236_REG_CPU_PORT);
+	ret = ar8236_reg_read(priv, AR8236_REG_MIB_FUNC, &val);
+	if (ret)
+		return ret;
+	ret = ar8236_reg_write(priv, AR8236_REG_MIB_FUNC, val | AR8236_MIB_EN);
+	if (ret)
+		return ret;
+	ret = ar8236_reg_read(priv, AR8236_REG_CPU_PORT, &val);
+	if (ret)
+		return ret;
 	ar8236_reg_write(priv, AR8236_REG_CPU_PORT, val | AR8236_CPU_PORT_EN);
 	ar8236_reg_write(priv, AR8236_REG_FLOOD_MASK,
 		BIT(0) << AR8236_REG_FLOOD_MASK_IGMP_DP_S |
@@ -277,16 +375,24 @@ static int ar8236_setup(struct dsa_switch *ds)
 		BIT(0) << AR8236_REG_FLOOD_MASK_UC_DP_S);
 
 	for (i = 0; i < AR8236_PORTS; i++) {
-		val = ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(i));
+		ret = ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(i), &val);
+		if (ret)
+			return ret;
 		ar8236_reg_write(priv, AR8236_REG_PORT_CTRL(i), val | AR8236_PORT_CTRL_LEARN | (4 << AR8236_PORT_CTRL_STATE_S));
 		if (i == AR8236_CPU_PORT) {
-			val = ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(i));
+			ret = ar8236_reg_read(priv, AR8236_REG_PORT_CTRL(i), &val);
+			if (ret)
+				return ret;
 			ar8236_reg_write(priv, AR8236_REG_PORT_CTRL(i), val | AR8236_PORT_CTRL_HEADER);
-			val = ar8236_reg_read(priv, AR8236_REG_PORT_VLAN2(i));
+			ret = ar8236_reg_read(priv, AR8236_REG_PORT_VLAN2(i), &val);
+			if (ret)
+				return ret;
 			ar8236_reg_write(priv, AR8236_REG_PORT_VLAN2(i), val | (user_mask << AR8236_PORT_VLAN2_MEMBER_S));
 			ar8236_reg_write(priv, AR8236_REG_PORT_STATUS(i), AR8236_PORT_STATUS_LINK_UP | AR8236_PORT_SPEED_100M | AR8236_PORT_STATUS_TXMAC | AR8236_PORT_STATUS_RXMAC | AR8236_PORT_STATUS_DUPLEX);
 		} else {
-			val = ar8236_reg_read(priv, AR8236_REG_PORT_VLAN2(i));
+			ret = ar8236_reg_read(priv, AR8236_REG_PORT_VLAN2(i), &val);
+			if (ret)
+				return ret;
 			ar8236_reg_write(priv, AR8236_REG_PORT_VLAN2(i), val | BIT(AR8236_CPU_PORT) << AR8236_PORT_VLAN2_MEMBER_S);
 			ar8236_reg_write(priv, AR8236_REG_PORT_STATUS(i), AR8236_PORT_STATUS_LINK_AUTO | AR8236_PORT_STATUS_LINK_FLOW_EN | AR8236_PORT_STATUS_TX_HALF_FLOW);
 		}
@@ -318,6 +424,9 @@ static const struct dsa_switch_ops ar8236_switch_ops = {
 	.port_enable = ar8236_port_enable,
 	.port_disable = ar8236_port_disable,
 	.phylink_get_caps = ar8236_phylink_get_caps,
+	.get_sset_count = ar8236_get_sset_count,
+	.get_strings = ar8236_get_strings,
+	.get_ethtool_stats = ar8236_get_ethtool_stats,
 };
 
 static int ar8236_probe(struct mdio_device *mdiodev)
@@ -336,6 +445,11 @@ static int ar8236_probe(struct mdio_device *mdiodev)
 
 	priv = devm_kzalloc(&mdiodev->dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
+		return -ENOMEM;
+	priv->mib_stats = devm_kcalloc(&mdiodev->dev,
+				      AR8236_PORTS * ARRAY_SIZE(ar8236_mibs),
+				      sizeof(*priv->mib_stats), GFP_KERNEL);
+	if (!priv->mib_stats)
 		return -ENOMEM;
 	priv->dev = &mdiodev->dev;
 	priv->bus = mdiodev->bus;

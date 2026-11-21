@@ -3,7 +3,8 @@
 Status: forward TCP retransmissions and asymmetric UDP loss reproduced on
 Beta 2 build #8 (2026-11-21). Earlier tests did not establish that the flow-bit
 change fixed forward throughput or that pause is the cause. See the latest
-runtime results below.
+runtime results below. The source bundle now includes an MIB diagnostics
+patch; it is not in the published build #8 image.
 
 ## Symptom
 
@@ -276,8 +277,9 @@ require large frames, TCP, high offered load, or `.3` as the endpoint.
 
 Next, repeat UDP using a wired peer (ideally direct, with a known-good cable
 and each OC200 port in turn) and collect switch MIB deltas from CPU port 0 and
-the active user port. The Beta 2 driver has no DSA stats callbacks; software
-`swp1` counters and mvneta RX counters do not cover switch port 0 ingress.
+the active user port. The published build #8 has no DSA stats callbacks;
+software `swp1` counters and mvneta RX counters do not cover switch port 0
+ingress.
 
 When revisiting pause, AR8236 port-status bit 12 selects PHY-negotiated
 versus software-configured flow control; it is not a generic pause-enable
@@ -286,6 +288,23 @@ Choose one owner of the flow-control state rather than writing directional
 bits and enabling PHY control in the same callback. For MIB collection,
 serialize MDIO page selection and both halfword transfers, return register
 data separately from errno, and accumulate the clear-on-read counters.
+
+### MIB diagnostics in the source bundle
+
+The patched driver exposes 39 AR8236 hardware counters per exposed DSA
+port. `ethtool -S swp1` or `ethtool -S swp2` reports the corresponding
+external switch port. `ethtool -S eth0` includes the CPU-port counters
+prefixed with `s00_p00_`, alongside the existing mvneta counters.
+
+Use before/after deltas per test, particularly CPU-port `RxFcsErr`,
+`RxAlignErr`, `RxTooLong` and `RxOverFlow`, and external-port `RxPause`,
+`TxPause` and `TxUnderRun`. The driver reads the clear-on-read registers on
+demand and accumulates them in software. It does not trigger MIB autocast,
+poll in the background, or flush counters. Take snapshots close to the
+test so narrow hardware counters have no time to saturate or wrap.
+If an MDIO read fails, the affected counter retains its cached total and
+the driver logs a rate-limited warning; do not use that delta to rule out
+loss. Runtime behavior is not verified on an OC200 with this patch.
 
 ### Offload test
 
