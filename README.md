@@ -9,7 +9,7 @@ OC200 (Armada 3720) board.
 |---|---|
 | `docs/` | Beta build notes, user guides (`docs/guides/`), investigation notes (`docs/notes/`) |
 | `build/kernel/` | Kernel configs, config history, DTS, config-prep script |
-| `build/emmc-image/` | eMMC image build scripts, partition layouts, flash helper, readback logs |
+| `build/ci/` | Upstream release resolver, Alpine rootfs and initramfs recipe, eMMC image builder |
 | `release/beta2/` | Release metadata: SHA256 sums, manifest, patched DTB and SPI-NOR image, kernel reproduction bundle |
 | `tools/` | Serial/RFC2217 helper scripts for the board, TFTP recovery server, backup receiver, WebUI test harness (`tools/webui/`) |
 | `research/` | Device U-Boot logs, boot log, AR8236 switch driver notes/code |
@@ -30,6 +30,6 @@ Paths marked `not-present/` never existed in the working tree.
 
 ## Start here
 
-1. `docs/BETA_BUILD.md`
+1. [Build a firmware image in GitHub Actions](docs/guides/GUIDE-CI-BUILD.md), or see `docs/BETA_BUILD.md` for the historical Beta procedure.
 2. `docs/guides/GUIDE-RECOVERY.md` before any flashing
 3. `docs/guides/GUIDE-NORMAL-BOOT.md` for acceptance checks

@@ -1,0 +1,7 @@
+#!/bin/sh
+# Invoked by getty on the physical serial console only.
+if ! grep -q '^root:[^!*:][^:]*:' /etc/shadow; then
+    printf '\nSet a root password for this OC200 before logging in.\n'
+    passwd root || exit 1
+fi
+exec /bin/login

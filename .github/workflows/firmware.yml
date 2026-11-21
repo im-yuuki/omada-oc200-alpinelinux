@@ -1,0 +1,102 @@
+name: Build OC200 firmware
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Upload to GitHub Releases as a new prerelease
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 150
+    outputs:
+      linux: ${{ steps.upstream.outputs.linux }}
+      alpine: ${{ steps.upstream.outputs.alpine }}
+      artifact: ${{ steps.build.outputs.artifact }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Check publish ref
+        if: ${{ inputs.publish && github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+        run: |
+          echo "::error::Publishing firmware is supported only from the default branch."
+          exit 1
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential bc bison flex libelf-dev libssl-dev openssl pkg-config ccache \
+            cpio erofs-utils f2fs-tools jq python3-yaml fdisk zstd
+      - name: Resolve upstream releases
+        id: upstream
+        run: |
+          /usr/bin/python3 build/ci/upstream.py "$RUNNER_TEMP/upstream.json"
+          echo "compiler=$(gcc -dumpfullversion)" >> "$GITHUB_OUTPUT"
+      - name: Cache upstream archives
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/oc200-downloads
+          key: oc200-download-v1-${{ steps.upstream.outputs.linux_sha }}-${{ steps.upstream.outputs.alpine_sha }}
+      - name: Download and verify release archives
+        run: /usr/bin/python3 build/ci/upstream.py "$RUNNER_TEMP/upstream.json" --fetch "$RUNNER_TEMP/oc200-downloads"
+      - name: Cache kernel compilation
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/oc200-ccache
+          key: oc200-cc-v1-${{ runner.os }}-${{ runner.arch }}-gcc${{ steps.upstream.outputs.compiler }}-${{ steps.upstream.outputs.linux }}-${{ hashFiles('release/beta2/kernel-repro/**', 'build/ci/**') }}
+          restore-keys: |
+            oc200-cc-v1-${{ runner.os }}-${{ runner.arch }}-gcc${{ steps.upstream.outputs.compiler }}-${{ steps.upstream.outputs.linux }}-
+      - name: Build and verify firmware
+        id: build
+        env:
+          CCACHE_DIR: ${{ runner.temp }}/oc200-ccache
+          CCACHE_BASEDIR: ${{ runner.temp }}/oc200-build
+          CCACHE_MAXSIZE: 350M
+          LINUX_VERSION: ${{ steps.upstream.outputs.linux }}
+          ALPINE_VERSION: ${{ steps.upstream.outputs.alpine }}
+        run: |
+          bash build/ci/firmware.sh "$RUNNER_TEMP/upstream.json" "$RUNNER_TEMP/oc200-downloads" \
+            "$RUNNER_TEMP/oc200-build" "$RUNNER_TEMP/oc200-dist"
+          ccache --show-stats
+          echo "artifact=oc200-alpine-$ALPINE_VERSION-linux-$LINUX_VERSION-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.build.outputs.artifact }}
+          path: ${{ runner.temp }}/oc200-dist/
+          compression-level: 0
+          if-no-files-found: error
+
+  release:
+    if: ${{ inputs.publish && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build.outputs.artifact }}
+          path: dist
+      - name: Publish firmware prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          LINUX_VERSION: ${{ needs.build.outputs.linux }}
+          ALPINE_VERSION: ${{ needs.build.outputs.alpine }}
+        run: |
+          (cd dist && sha256sum --strict -c SHA256SUMS.txt)
+          tag="ci-alpine-$ALPINE_VERSION-linux-$LINUX_VERSION-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          gh release create "$tag" \
+            dist/oc200-alpine-*-emmc.img.zst dist/oc200-linux-*-Image.zst dist/oc200.dtb \
+            dist/kernel.config dist/alpine-packages.txt dist/build-manifest.json dist/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "OC200 CI: Alpine $ALPINE_VERSION / Linux $LINUX_VERSION" \
+            --notes "Automated build from $GITHUB_SHA. Build-time checks passed; not tested on hardware. The full eMMC user-area image replaces both partitions."
