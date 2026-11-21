@@ -1,0 +1,31 @@
+#!/bin/busybox sh
+set -eu
+BB=/bin/busybox
+
+rescue() {
+    echo "OC200 initramfs: $*" >&2
+    exec "$BB" sh
+}
+
+"$BB" mount -t devtmpfs devtmpfs /dev || rescue "cannot mount /dev"
+"$BB" chmod 666 /dev/null /dev/zero /dev/full /dev/random /dev/urandom /dev/tty ||
+    rescue "cannot set devtmpfs device modes"
+
+n=0
+until [ -b /dev/mmcblk0p1 ] && [ -b /dev/mmcblk0p2 ]; do
+    [ "$n" -lt 60 ] || rescue "eMMC partitions not found"
+    "$BB" sleep 1
+    n=$((n + 1))
+done
+
+"$BB" mount -t erofs -o ro /dev/mmcblk0p1 /lower || rescue "cannot mount EROFS"
+"$BB" mount -t f2fs /dev/mmcblk0p2 /state || rescue "cannot mount F2FS"
+"$BB" mkdir -p /state/upper /state/work || rescue "cannot create overlay directories"
+"$BB" mount -t overlay overlay \
+    -o lowerdir=/lower,upperdir=/state/upper,workdir=/state/work /newroot ||
+    rescue "cannot mount persistent root"
+
+"$BB" mount -o move /lower /newroot/.oc200/lower || rescue "cannot move EROFS mount"
+"$BB" mount -o move /state /newroot/.oc200/state || rescue "cannot move F2FS mount"
+"$BB" mount -o move /dev /newroot/dev || rescue "cannot move devtmpfs"
+exec "$BB" switch_root /newroot /sbin/init

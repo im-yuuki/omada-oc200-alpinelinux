@@ -9,6 +9,11 @@ Linux kernel source. Download the exact upstream source separately:
 - Expected archive SHA-256: verify against the official upstream release
   before extraction; do not use a vendor-patched tree.
 
+For fresh firmware builds against current upstream releases, use the
+[CI build guide](../../../docs/guides/GUIDE-CI-BUILD.md). That workflow
+generates its persistent initramfs from Alpine; the historical `build.sh`
+below expects an existing `config/erofs-initramfs.cpio` that is not tracked.
+
 ## Contents
 
 ```text
