@@ -1,11 +1,9 @@
 # OC200 AR8236 / iperf3 investigation
 
-Status: runtime A/B tests completed; an explicit flow-bit programming change is
-in the kernel (`release/beta2/kernel-repro/drivers/net/dsa/qca/ar8236.c`). After
-that change, forward throughput rose from about 55 Mbps to 91 Mbps (2026-11-03).
-Reverse was 95.2 Mbps with 0 retries on the same kernel. Forward TCP retries
-stayed high.
-Earlier A/B tests did not confirm pause mismatch as the sole cause.
+Status: forward TCP retransmissions and asymmetric UDP loss reproduced on
+Beta 2 build #8 (2026-11-21). Earlier tests did not establish that the flow-bit
+change fixed forward throughput or that pause is the cause. See the latest
+runtime results below.
 
 ## Symptom
 
@@ -239,6 +237,55 @@ Next steps:
 2. Investigate the remaining forward retries: CPU-port pause policy, AR8236
    MIB counters, and the tagger and mvneta items below.
 3. Repeat the forward test a few times to see whether the retry count is stable.
+
+### Runtime results — 2026-11-21 (Beta 2 build #8)
+
+Measured without changing network settings. The board reported Linux
+`6.18.59 #8`, and exact-length readbacks of the kernel and DTB slots matched
+`release/beta2/build-manifest.json`. The route to `192.168.12.3` used `swp1`
+directly; `swp1` was 100/full, MTU 1500, with RX/TX pause negotiated. The `eth0`
+conduit was 100/full, MTU 1502, QCA tagging, no negotiated pause. Both live
+fixed-link nodes had `speed` and `full-duplex` but no `pause` or `asym-pause`.
+
+| TCP to `.3`, 8 s per run | Receiver Mbps | Sender retransmissions | Retransmissions per MiB sent |
+| --- | ---: | ---: | ---: |
+| Forward, two runs | 71.8–74.0 | 1,621–1,867 | 22.8–27.0 |
+| Forward, `-b 40M`, two runs | 40.0–40.1 | 655–731 | 17.1–19.1 |
+| Forward, `-M 1200`, two runs | 63.0–64.2 | 1,940–2,020 | 31.4–33.3 |
+| Reverse | 93.3 | 74 | 0.8 |
+| Bidirectional, board sends | 34.9 | 987 | 29.4 |
+| Bidirectional, board receives | 90.0 | 76 | 0.9 |
+
+Across these runs, the mvneta CRC, bad-frame, discard, overrun, and internal
+TX-error counters did not increase. Neither did qdisc or softnet drops.
+CPU0 handled the `eth0` IRQ and spent about 51% of the bidirectional run in
+softirq; softnet `time_squeeze` increased by 86 in that run. This does not
+establish that CPU load caused loss. Reducing offered load lowered but did
+not eliminate retransmissions; reducing MSS did not help.
+
+UDP to `.3:5201` failed during stream setup and did not yield a loss
+measurement. A second endpoint on the same LAN, reached over Wi-Fi, also
+reproduced TCP TX retransmissions (57.1 Mbps received, 1,252 retries in 5 s).
+It reported forward UDP loss of 2.8–3.25% at 10 Mbps with 1,200-byte payloads,
+3.04% at 2 Mbps with 256-byte payloads, and 3.14% at 40 Mbps with 1,200-byte
+payloads. Reverse UDP at 40 Mbps reported no loss in one run. The small-packet
+and repeated 10 Mbps runs did not raise the receiver's UDP checksum or socket
+buffer error counters. The alternate path includes Wi-Fi, so these runs do
+not localize the loss to AR8236. They show the broader TX symptom does not
+require large frames, TCP, high offered load, or `.3` as the endpoint.
+
+Next, repeat UDP using a wired peer (ideally direct, with a known-good cable
+and each OC200 port in turn) and collect switch MIB deltas from CPU port 0 and
+the active user port. The Beta 2 driver has no DSA stats callbacks; software
+`swp1` counters and mvneta RX counters do not cover switch port 0 ingress.
+
+When revisiting pause, AR8236 port-status bit 12 selects PHY-negotiated
+versus software-configured flow control; it is not a generic pause-enable
+bit ([AR8236 datasheet, table 3-31](https://ickala.com/downloadscenter/8691-download/AR8236-AL1A.html)).
+Choose one owner of the flow-control state rather than writing directional
+bits and enabling PHY control in the same callback. For MIB collection,
+serialize MDIO page selection and both halfword transfers, return register
+data separately from errno, and accumulate the clear-on-read counters.
 
 ### Offload test
 
