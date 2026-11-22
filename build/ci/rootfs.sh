@@ -29,8 +29,7 @@ printf '\nttyMV0::respawn:/sbin/getty -L -n -l /sbin/oc200-serial-login 115200 t
 printf 'oc200\n' > "$root/etc/hostname"
 printf '127.0.0.1 localhost localhost.localdomain oc200\n::1 localhost localhost.localdomain\n' \
     > "$root/etc/hosts"
-mkdir -p "$root/etc/network" "$root/etc/ssh/sshd_config.d" \
-    "$root/.oc200/lower" "$root/.oc200/state"
+mkdir -p "$root/etc/network" "$root/etc/ssh/sshd_config.d"
 cat > "$root/etc/network/interfaces" <<'EOF'
 auto lo
 iface lo inet loopback

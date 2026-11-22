@@ -25,7 +25,7 @@ done
     -o lowerdir=/lower,upperdir=/state/upper,workdir=/state/work /newroot ||
     rescue "cannot mount persistent root"
 
-"$BB" mount -o move /lower /newroot/.oc200/lower || rescue "cannot move EROFS mount"
-"$BB" mount -o move /state /newroot/.oc200/state || rescue "cannot move F2FS mount"
+# OverlayFS keeps the backing filesystems referenced across switch_root.
+# Only /dev needs to move into the Alpine root.
 "$BB" mount -o move /dev /newroot/dev || rescue "cannot move devtmpfs"
 exec "$BB" switch_root /newroot /sbin/init

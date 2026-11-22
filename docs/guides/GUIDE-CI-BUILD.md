@@ -27,7 +27,9 @@ the run log.
 
 The main artifact is `oc200-alpine-*-linux-*-emmc.img.zst`, a compressed eMMC
 **user-area** image with an embedded persistent initramfs, EROFS `rootfs` and
-F2FS `userdata` (OverlayFS). The archive also contains a separate compressed
+F2FS `userdata` (OverlayFS). The two backing filesystems are mounted in the
+initramfs and do not require dedicated mount points in the Alpine root.
+The archive also contains a separate compressed
 ARM64 `Image`, `oc200.dtb`, `kernel.config`, `alpine-packages.txt`,
 `build-manifest.json` and `SHA256SUMS.txt`. Check the downloaded files with
 `sha256sum -c SHA256SUMS.txt`; the manifest also records the raw image hash.
