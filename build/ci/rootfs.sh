@@ -17,17 +17,16 @@ printf 'https://dl-cdn.alpinelinux.org/alpine/%s/%s\n' "$branch" main "$branch" 
     > "$root/etc/apk/repositories"
 
 target() { chroot "$root" "$@"; }
+if ! target /bin/sh -c ': >/dev/null && test -r /dev/urandom'; then
+    echo "Build rootfs on a filesystem that permits device nodes (not nodev)" >&2
+    exit 1
+fi
 target /sbin/apk upgrade --no-cache
-
-# Reserve the Beta 2 IDs before APK runs chrony's account setup.
-target /bin/busybox addgroup -S -g 124 chrony
-target /bin/busybox adduser -S -H -u 124 -G chrony -g chrony \
-    -h /var/lib/chrony -s /sbin/nologin chrony
 target /sbin/apk add --no-cache \
     alpine-base busybox-static openssh chrony \
     vim curl tftp-hpa bind-tools tcpdump ethtool strace usbutils f2fs-tools
-test "$(target /bin/busybox id -u chrony):$(target /bin/busybox id -g chrony)" = 124:124
-chown -R 124:124 "$root/var/lib/chrony"
+# Verify the package's account setup without assigning numeric IDs ourselves.
+target /bin/busybox id chrony >/dev/null
 
 # Match Beta 2's documented initial login on serial and SSH.
 printf '%s\n' 'root:alpine' | target /bin/busybox chpasswd

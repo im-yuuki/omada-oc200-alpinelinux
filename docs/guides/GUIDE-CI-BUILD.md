@@ -47,10 +47,11 @@ before connecting the board to an untrusted network. SSH host keys are
 generated on the device, not included in the image. Both `swp` ports are
 configured for DHCP and SLAAC. Docker userspace is not bundled.
 
-Keep these Beta 2 runtime behaviors when changing the build recipe: direct
-serial and SSH login on a fresh image, chrony UID/GID `124:124` (for existing
-userdata), and the original 512 MiB `/dev/zram0` swap service. These builds
-do not use eMMC for swap.
+Fresh images leave the `chrony` user, group and data permissions to the
+Alpine package; the build does not pin numeric IDs. A kernel-only update
+does not change accounts or data in the installed rootfs. Direct serial and
+SSH login and the original 512 MiB `/dev/zram0` service are retained from
+Beta 2. These builds do not use eMMC for swap.
 
 ## Run locally
 
@@ -58,11 +59,13 @@ On a native ARM64 Ubuntu 24.04 host, install the tools listed in
 [`firmware.yml`](../../.github/workflows/firmware.yml), then:
 
 ```sh
-work=$(mktemp -d)
+work=$(mktemp -d "$HOME/oc200-build.XXXXXX")
 python3 build/ci/upstream.py "$work/upstream.json"
 python3 build/ci/upstream.py "$work/upstream.json" --fetch "$work/downloads"
 bash build/ci/firmware.sh "$work/upstream.json" "$work/downloads" "$work/build" "$work/dist"
 ```
 
 The scripts use `sudo` to prepare the chroot and preserve rootfs ownership
-and permissions. They assemble regular files only and never write to a device.
+and permissions. Use a build filesystem that permits device nodes for the
+chroot, not a `nodev` mount. The scripts assemble image files only and never
+write to a board or a block device.
