@@ -28,8 +28,9 @@ image, kernel, DTB, manifest and checksums to the run. The optional `publish`
 checkbox creates a separate GitHub prerelease from the default branch.
 See the [CI build guide](docs/guides/GUIDE-CI-BUILD.md) for local builds,
 artifact verification and first login. CI images are build-checked, not
-hardware-tested; on first serial login you set the root password, and SSH
-uses public-key authentication.
+hardware-tested. Fresh images use the documented Beta 2 default login over
+serial and SSH. Change the default password before exposing the board to an
+untrusted network.
 
 ## Read before installing
 

@@ -41,11 +41,16 @@ full eMMC image replaces both existing partitions, including userdata. It
 contains no SPI-NOR, bootloader, eMMC boot partition, or RAM recovery image.
 Read [the recovery guide](GUIDE-RECOVERY.md) before any device operation.
 
-There is no shared root password or baked-in SSH host key. On first serial
-login (`ttyMV0`, 115200 8N1), set a root password at the prompt. For SSH,
-install a public key in `/root/.ssh/authorized_keys` from the serial console;
-password authentication over SSH is disabled. Both `swp` ports are configured
-for DHCP and SLAAC. Docker userspace is not bundled.
+On a fresh image, log in as `root` with password `alpine` via serial
+(`ttyMV0`, 115200 8N1) or SSH. Change the default password with `passwd`
+before connecting the board to an untrusted network. SSH host keys are
+generated on the device, not included in the image. Both `swp` ports are
+configured for DHCP and SLAAC. Docker userspace is not bundled.
+
+Keep these Beta 2 runtime behaviors when changing the build recipe: direct
+serial and SSH login on a fresh image, chrony UID/GID `124:124` (for existing
+userdata), and the original 512 MiB `/dev/zram0` swap service. These builds
+do not use eMMC for swap.
 
 ## Run locally
 
