@@ -29,6 +29,8 @@ The main artifact is `oc200-alpine-*-linux-*-emmc.img.zst`, a compressed eMMC
 **user-area** image with an embedded persistent initramfs, EROFS `rootfs` and
 F2FS `userdata` (OverlayFS). The two backing filesystems are mounted in the
 initramfs and do not require dedicated mount points in the Alpine root.
+The initramfs mounts `/sys` before starting Alpine so Beta 2's zram service
+can run during the OpenRC boot runlevel after a kernel-only update.
 The archive also contains a separate compressed
 ARM64 `Image`, `oc200.dtb`, `kernel.config`, `alpine-packages.txt`,
 `build-manifest.json` and `SHA256SUMS.txt`. Check the downloaded files with

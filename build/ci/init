@@ -25,7 +25,8 @@ done
     -o lowerdir=/lower,upperdir=/state/upper,workdir=/state/work /newroot ||
     rescue "cannot mount persistent root"
 
-# OverlayFS keeps the backing filesystems referenced across switch_root.
-# Only /dev needs to move into the Alpine root.
+# The Beta 2 zram service needs sysfs before OpenRC mounts it on demand.
+"$BB" mount -t sysfs -o nodev,noexec,nosuid sysfs /newroot/sys ||
+    rescue "cannot mount sysfs for Alpine"
 "$BB" mount -o move /dev /newroot/dev || rescue "cannot move devtmpfs"
 exec "$BB" switch_root /newroot /sbin/init
